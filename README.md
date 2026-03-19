@@ -53,8 +53,49 @@ These become **unforgeable proofs** of system state.
 - [SOLFUNMEME](https://github.com/meta-introspector/solfunmeme) - Main project
 - [Introspector LLC](https://github.com/meta-introspector/introspector-llc) - First zkML NFT DAO LLC
 
+## Quick Start
+
+```bash
+nix develop                                    # Enter dev shell
+make build                                     # Build zkperf
+./scripts/import-perf-actual.sh                # Import 7 language benchmarks
+./scripts/record-http.sh https://example.com   # Record HTTP witness
+./examples/stage-comparison.sh                 # Compare perf stages
+make report                                    # Generate JSON report
+```
+
+## Examples
+
+| Example | Pattern | Language |
+|---|---|---|
+| `examples/zkperf-chain.py` | Build full 5-layer provenance chain | Python |
+| `examples/zkperf-verify.js` | Verify chain commitment + layers | JavaScript |
+| `examples/zkperf-full-chain.sh` | Record complete witness chain | Bash |
+| `examples/analyze-recordings.sh` | Analyze all imported recordings and proofs | Bash |
+| `examples/benchmark-all.sh` | Record perf for multiple languages | Bash |
+| `examples/component-proofs.sh` | Pipelight-style component proofs | Bash |
+| `examples/conformal-witness.sh` | Cross-language conformal mapping witness | Bash |
+| `examples/game-state-witness.sh` | Consensus game state with perf commitment | Bash |
+| `examples/http-witness.sh` | HTTP request witness with perf + strace | Bash |
+| `examples/import-existing.sh` | Import perf_actual data from nix cache | Bash |
+| `examples/stage-comparison.sh` | Compare two perf stages (stage0 vs stage42) | Bash |
+
+## Imported Data
+
+- **7 language benchmarks** — coq, haskell, lua, ocaml, python, ruby, rust
+- **state-4-zkperf** — Consensus game state (1.9M cycles, 2.7M instructions)
+- **harbot proofs** — Conformal witness, no-old-code manifest
+- **pipelight proofs** — 10 component proofs (parser → profiler)
+- **[erdfa-publish](erdfa-publish/)** — Semantic CBOR shard publisher with CFT decomposition
+
 ## Documentation
 
+- [The Need for Introspection](docs/NEED_FOR_INTROSPECTION.md) ← **start here**
+- [Nix Derivation Archaeology](docs/NIX_DERIVATIONS.md)
+- [Existing Data Catalog](docs/EXISTING_DATA.md)
+- [Recording Tools Reference](docs/RECORDING_TOOLS.md)
+- [eRDFa Integration](docs/ERDFA_INTEGRATION.md)
+- [Proof Artifacts](proofs/README.md)
 - [CRQ-002: zkPerf Specification](../CRQ-002-introspector.md)
 - [zkELF: ELF Signatures](../ZKELF.md)
 - [zkStego: Steganographic Protocol](../ZKSTEGO.md)

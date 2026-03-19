@@ -1,0 +1,56 @@
+{
+  "chain_file": "proofs/witness-chain.json",
+  "timestamp": "2026-03-19T15:49:43.827930+00:00",
+  "commitment": "2ba6fe125244a8baf478e36150d5f29f560c9e5e3ee27d2527b40627cb9858c0",
+  "commitment_valid": true,
+  "trace_valid": true,
+  "source_valid": true,
+  "layers": [
+    {
+      "layer": "1_binaries",
+      "present": true,
+      "data": [
+        "path",
+        "closure_size",
+        "closure_hash",
+        "paths"
+      ]
+    },
+    {
+      "layer": "2_source_debug",
+      "present": true,
+      "data": [
+        "source",
+        "debug_symbols",
+        "source_hash"
+      ]
+    },
+    {
+      "layer": "3_traces",
+      "present": true,
+      "data": [
+        "perf_data",
+        "size",
+        "hash"
+      ]
+    },
+    {
+      "layer": "4_model",
+      "present": true,
+      "data": [
+        "chain_hash",
+        "layer_count"
+      ]
+    },
+    {
+      "layer": "5_events",
+      "present": true,
+      "data": [
+        "builder",
+        "hostname",
+        "cwd"
+      ]
+    }
+  ],
+  "complete": true
+}

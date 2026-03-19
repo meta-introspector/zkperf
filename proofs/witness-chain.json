@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-03-19T15:49:43.827930+00:00",
+  "version": "0.1.0",
+  "layers": {
+    "1_binaries": {
+      "path": "/nix/store/0wy3yj5m6fxha1msqlgnkn18yf6lmx1b-zkperf-0.1.0",
+      "closure_size": 7,
+      "closure_hash": "89b1861dcfa4c37bd7b32ce536537af2ed4a718911bac823063f5e1dd3bed484",
+      "paths": [
+        "/nix/store/97rn2wpm09db8278qzjvbss9ybxhfsxf-gcc-15.2.0-libgcc",
+        "/nix/store/r7vdyf8pwlqsgd5ydak9fmq3q1i5nm3m-xgcc-15.2.0-libgcc",
+        "/nix/store/1xakvg5jqmaiawwk0n1sbhvsvrdya512-libunistring-1.4.1",
+        "/nix/store/ylvn8sswwfdp6l71hmz9ic8m4w9996j5-libidn2-2.3.8",
+        "/nix/store/l0l2ll1lmylczj1ihqn351af2kyp5x19-glibc-2.42-51",
+        "/nix/store/ihpdbhy4rfxaixiamyb588zfc3vj19al-gcc-15.2.0-lib",
+        "/nix/store/0wy3yj5m6fxha1msqlgnkn18yf6lmx1b-zkperf-0.1.0"
+      ]
+    },
+    "2_source_debug": {
+      "source": "src/witness.rs",
+      "debug_symbols": {
+        "path": "/home/mdupont/.debug/nix/store/0wy3yj5m6fxha1msqlgnkn18yf6lmx1b-zkperf-0.1.0",
+        "available": false
+      },
+      "source_hash": "e38cb933dcccd2411977f64a2e9cc1ea59825c5763ddfecba2a912710a1f2dd8"
+    },
+    "3_traces": {
+      "perf_data": "recordings/rust_actual.perf.data",
+      "size": 36964,
+      "hash": "0fbc4c9e4d853b5e99ca3b867304c834cc2075f13526887673d9542523b3a01d"
+    },
+    "4_model": {
+      "chain_hash": "c3e34393dc30a812958300c8387716520152b23a0ec4c7310eb035baaeb1adb7",
+      "layer_count": 3
+    },
+    "5_events": {
+      "builder": "mdupont",
+      "hostname": "mdupont-G470",
+      "cwd": "/mnt/data1/time-2026/03-march/19/zkperf"
+    }
+  },
+  "commitment": "2ba6fe125244a8baf478e36150d5f29f560c9e5e3ee27d2527b40627cb9858c0"
+}
