@@ -1,4 +1,4 @@
-.PHONY: build test clean record record-all witness compare report install dev dev-shell fmt check nix-build nix-check
+.PHONY: build test clean record record-all witness compare report install dev dev-shell fmt check nix-build nix-check analyze export
 
 PERF := perf
 STRACE := strace
@@ -66,7 +66,26 @@ $(PROOFS):
 	mkdir -p $(PROOFS)
 
 witness: nix-build $(PROOFS)
-	result/bin/zkperf-witness
+	nix build .#zkperf-witness
+	cp -rL result/* $(PROOFS)/
+	cat $(PROOFS)/perf.txt
+	cat $(PROOFS)/commitment
+
+trace: $(PROOFS)
+	nix build .#zkperf-trace
+	cp -rL result/* $(PROOFS)/
+	cat $(PROOFS)/trace.json
+
+analyze:
+	nix build .#zkperf-analyze
+	@echo "=== Analysis ===" && cat result/analysis.json
+	@echo "=== Top cycles ===" && head -20 result/top-cycles.txt
+
+export:
+	nix build .#zkperf-export
+	@echo "Chain commitment: $$(cat result/COMMITMENT)"
+	@echo "=== Witness ===" && cat result/erdfa/witness.json
+	@ls -lh result/nar/*.nar
 
 # Compare two perf stages
 compare: $(RECORDINGS)
