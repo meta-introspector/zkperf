@@ -1,0 +1,29 @@
+{
+  "target": "rune-bootstrap",
+  "binary": "/home/mdupont/git/rune/target/release/rune",
+  "command": "rune -l /tmp/test.el",
+  "wall_time_s": 4.475,
+  "cycles": 23047786353,
+  "instructions": 80497448468,
+  "ipc": 3.49,
+  "cache_misses": 1288701,
+  "branch_misses": 106625538,
+  "hotspots": [
+    {"function": "Gc::move_value (GC copy)", "pct": 17.01},
+    {"function": "Interpreter::eval_call", "pct": 9.65},
+    {"function": "Interpreter::eval_form", "pct": 8.67},
+    {"function": "Cons::trace (GC trace)", "pct": 7.39},
+    {"function": "RawVec::finish_grow (alloc)", "pct": 4.02},
+    {"function": "TracePtr::trace_ptr", "pct": 3.98},
+    {"function": "malloc", "pct": 3.12},
+    {"function": "cfree", "pct": 2.95},
+    {"function": "core::fmt::write", "pct": 2.93}
+  ],
+  "diagnosis": {
+    "gc_overhead_pct": 28.38,
+    "alloc_overhead_pct": 10.09,
+    "interpreter_pct": 20.65,
+    "formatting_pct": 5.16,
+    "conclusion": "GC + alloc = 38.5% of cycles. Cons cell tracing dominates. CBOR-native values would eliminate Cons::trace entirely."
+  }
+}

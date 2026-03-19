@@ -1,0 +1,20 @@
+# started on Thu Mar 19 18:38:44 2026
+
+
+ Performance counter stats for '/home/mdupont/git/rune/target/release/rune -l /tmp/test.el':
+
+     <not counted>      cpu_atom/cycles/                                                        (0.00%)
+    23,047,786,353      cpu_core/cycles/                                                      
+     <not counted>      cpu_atom/instructions/                                                  (0.00%)
+    80,497,448,468      cpu_core/instructions/           #    3.49  insn per cycle            
+     <not counted>      cpu_atom/cache-misses/                                                  (0.00%)
+         1,288,701      cpu_core/cache-misses/                                                
+     <not counted>      cpu_atom/branch-misses/                                                 (0.00%)
+       106,625,538      cpu_core/branch-misses/                                               
+
+       4.474931803 seconds time elapsed
+
+       4.446382000 seconds user
+       0.012998000 seconds sys
+
+
