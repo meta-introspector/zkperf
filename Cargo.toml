@@ -11,3 +11,7 @@ serde_json = "1.0"
 [[bin]]
 name = "zkperf-witness"
 path = "src/bin/witness.rs"
+
+[[bin]]
+name = "zkperf-parse"
+path = "src/bin/parse.rs"
