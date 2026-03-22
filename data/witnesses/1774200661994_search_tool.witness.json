@@ -1,0 +1,1 @@
+{"context":"search_tool","signature":"23648f55610eec4e8480f6dcdf11ea834816548f7aae152f2ddcba22d1880b3c","complexity":"O(n)","max_n":1000,"max_ms":100,"elapsed_ms":0,"violated":false,"timestamp":1774200661994,"platform":"linux","perf":{"cycles":0,"instructions":0,"cache_misses":0,"branch_misses":0,"context_switches":0}}

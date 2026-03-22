@@ -1,0 +1,1 @@
+{"context":"notebook-encode","signature":"fractran-vm::notebook_encode::unitary_fold","complexity":"O(n*m)","max_n":45,"max_ms":60000,"elapsed_ms":84,"violated":false,"timestamp":1774196583704,"platform":"linux","perf":{"cycles":0,"instructions":0,"cache_misses":0,"branch_misses":0,"context_switches":0}}
