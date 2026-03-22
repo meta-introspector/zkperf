@@ -1,3 +1,6 @@
+[workspace]
+members = [".", "zkperf-macros", "zkperf-witness"]
+
 [package]
 name = "zkperf"
 version = "0.1.0"
@@ -7,6 +10,15 @@ license = "AGPL-3.0"
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+linux-perf-data = { path = "linux-perf-data" }
+linux-perf-event-reader = "0.10"
+erdfa-publish = { path = "erdfa-publish" }
+sha2 = "0.10"
+hex = "0.4"
+anyhow = "1"
+ciborium = "0.2"
+zkperf-macros = { path = "zkperf-macros" }
+zkperf-witness = { path = "zkperf-witness" }
 
 [[bin]]
 name = "zkperf-witness"
@@ -15,3 +27,15 @@ path = "src/bin/witness.rs"
 [[bin]]
 name = "zkperf-parse"
 path = "src/bin/parse.rs"
+
+[[bin]]
+name = "zkperf-record"
+path = "src/bin/record.rs"
+
+[[bin]]
+name = "zkperf-schema"
+path = "src/bin/schema.rs"
+
+[[bin]]
+name = "zkperf-audit"
+path = "src/bin/audit.rs"
