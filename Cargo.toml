@@ -20,6 +20,9 @@ ciborium = "0.2"
 zkperf-macros = { path = "zkperf-macros" }
 zkperf-witness = { path = "zkperf-witness" }
 
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"
+
 [[bin]]
 name = "zkperf-witness"
 path = "src/bin/witness.rs"
@@ -39,3 +42,7 @@ path = "src/bin/schema.rs"
 [[bin]]
 name = "zkperf-audit"
 path = "src/bin/audit.rs"
+
+[[bin]]
+name = "zkperf-service"
+path = "src/bin/service.rs"
