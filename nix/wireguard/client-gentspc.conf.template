@@ -1,0 +1,17 @@
+# WireGuard client config for GentsPC (Windows)
+# Import into WireGuard Windows app
+#
+# To get actual keys: sops --decrypt secrets/wireguard.yaml
+# Then replace DECRYPT_FROM_SOPS with client_private_key and preshared_key values
+
+[Interface]
+PrivateKey = DECRYPT_FROM_SOPS
+Address = 10.100.0.2/24
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey = ad1Pj+qvyjoJr2DJ8/zTcNvuve2+QtBDT1dZs2EUvgs=
+PresharedKey = DECRYPT_FROM_SOPS
+Endpoint = 192.168.68.62:51820
+AllowedIPs = 10.100.0.0/24
+PersistentKeepalive = 25
