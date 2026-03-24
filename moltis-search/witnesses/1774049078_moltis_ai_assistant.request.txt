@@ -1,0 +1,24 @@
+GET https://html.duckduckgo.com/html/?q=moltis+ai+assistant
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) moltis-search/0.1
+---
+Status: 200
+server: nginx
+date: Fri, 20 Mar 2026 23:24:38 GMT
+content-type: text/html; charset=UTF-8
+transfer-encoding: chunked
+connection: keep-alive
+vary: Accept-Encoding
+server-timing: total;dur=868;desc="Backend Total [n]"
+vary: Accept-Encoding
+strict-transport-security: max-age=31536000
+x-robots-tag: noindex
+permissions-policy: interest-cohort=()
+content-security-policy: default-src 'none' ; connect-src  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; manifest-src  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; media-src  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; script-src blob:  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; font-src data:  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; img-src data:  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; style-src  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; object-src 'none' ; worker-src blob: ; child-src blob:  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; frame-src blob:  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; frame-ancestors 'self' ; base-uri 'self' ; block-all-mixed-content ;
+x-frame-options: SAMEORIGIN
+x-xss-protection: 1;mode=block
+x-content-type-options: nosniff
+referrer-policy: origin
+expect-ct: max-age=0
+expires: Fri, 20 Mar 2026 23:24:39 GMT
+cache-control: max-age=1
+x-duckduckgo-locale: en_US

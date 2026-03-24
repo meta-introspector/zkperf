@@ -1596,6 +1596,7 @@ dependencies = [
  "ciborium",
  "erdfa-publish",
  "hex",
+ "libc",
  "linux-perf-data 0.12.0",
  "linux-perf-event-reader 0.10.2",
  "serde",

@@ -16,41 +16,47 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use std::process::Command;
 
+/// Side-channel fields that leak information and should be redacted in private mode.
+const PRIVATE_FIELDS: &[&str] = &["ip", "samples", "count", "pct", "cmdline", "source"];
+
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    let private = args.iter().any(|a| a == "--private");
+    let args: Vec<&str> = args.iter().filter(|a| *a != "--private").map(|s| s.as_str()).collect();
     if args.is_empty() {
         eprintln!("usage:");
-        eprintln!("  zkperf-record run  <cmd> <out-dir>");
-        eprintln!("  zkperf-record read <perf.data> <out-dir>");
+        eprintln!("  zkperf-record [--private] run  <cmd> <out-dir>");
+        eprintln!("  zkperf-record [--private] read <perf.data> <out-dir>");
         eprintln!("  zkperf-record agda <shard-dir> <out.agda> [module]");
+        eprintln!("\n  --private  commit side-channel values (Merkle tree), redact sensitive fields");
         std::process::exit(1);
     }
-    match args[0].as_str() {
-        "run" => cmd_run(&args[1], &args[2])?,
-        "read" => cmd_read(&args[1], &args[2])?,
+    match args[0] {
+        "run" => cmd_run(args[1], args[2], private)?,
+        "read" => cmd_read(args[1], args[2], private)?,
         "agda" => {
-            let m = args.get(3).map(|s| s.as_str()).unwrap_or("PerfTrace");
-            cmd_agda(&args[1], &args[2], m)?;
+            let m = args.get(3).copied().unwrap_or("PerfTrace");
+            cmd_agda(args[1], args[2], m)?;
         }
         _ => eprintln!("unknown: {}", args[0]),
     }
     Ok(())
 }
 
-fn cmd_run(cmd: &str, out_dir: &str) -> Result<()> {
+fn cmd_run(cmd: &str, out_dir: &str, private: bool) -> Result<()> {
     let perf_data = format!("{}/perf.data", out_dir);
     fs::create_dir_all(out_dir)?;
-    eprintln!("recording: {}", cmd);
+    eprintln!("recording{}: {}", if private { " (private)" } else { "" }, cmd);
     Command::new("perf")
         .args(["record", "-g", "--call-graph", "dwarf,65528",
                "-e", "cycles:u,instructions:u,cache-misses:u,branch-misses:u",
                "-c", "100", "-o", &perf_data, "--", "sh", "-c", cmd])
         .status()?;
-    cmd_read(&perf_data, out_dir)
+    cmd_read(&perf_data, out_dir, private)
 }
 
 /// Read raw perf.data binary — extract functions, instructions, timestamps
-fn cmd_read(perf_path: &str, out_dir: &str) -> Result<()> {
+fn cmd_read(perf_path: &str, out_dir: &str, private: bool) -> Result<()> {
     fs::create_dir_all(out_dir)?;
     let file = File::open(perf_path)?;
     let reader = BufReader::new(file);
@@ -119,7 +125,7 @@ fn cmd_read(perf_path: &str, out_dir: &str) -> Result<()> {
         ("unique_ips".into(), ip_counts.len().to_string()),
         ("commitment".into(), commitment),
     ];
-    write_shard(out_dir, "summary", summary_pairs, vec!["perf", "da51", "summary"])?;
+    write_shard_privacy(out_dir, "summary", summary_pairs, vec!["perf", "da51", "summary"], private)?;
 
     // 2. Event count shards
     for (event, count) in &event_counts {
@@ -128,7 +134,7 @@ fn cmd_read(perf_path: &str, out_dir: &str) -> Result<()> {
             ("count".into(), count.to_string()),
         ];
         let id = format!("event_{}", event.replace('/', "_").replace(':', "_"));
-        write_shard(out_dir, &id, pairs, vec!["perf", "da51", "event"])?;
+        write_shard_privacy(out_dir, &id, pairs, vec!["perf", "da51", "event"], private)?;
     }
 
     // 3. Function/record-type shards (all of them)
@@ -141,7 +147,7 @@ fn cmd_read(perf_path: &str, out_dir: &str) -> Result<()> {
             ("samples".into(), count.to_string()),
             ("pct".into(), format!("{:.4}", **count as f64 / total.max(1) as f64 * 100.0)),
         ];
-        write_shard(out_dir, &format!("func_{}", i), pairs, vec!["perf", "da51", "function"])?;
+        write_shard_privacy(out_dir, &format!("func_{}", i), pairs, vec!["perf", "da51", "function"], private)?;
     }
 
     // 4. Instruction address shards (top 200)
@@ -153,7 +159,7 @@ fn cmd_read(perf_path: &str, out_dir: &str) -> Result<()> {
             ("ip".into(), format!("0x{:x}", ip)),
             ("samples".into(), count.to_string()),
         ];
-        write_shard(out_dir, &format!("instr_{}", i), pairs, vec!["perf", "da51", "instruction"])?;
+        write_shard_privacy(out_dir, &format!("instr_{}", i), pairs, vec!["perf", "da51", "instruction"], private)?;
     }
 
     // 5. Timestamp trace shard (raw sample stream, first 10000)
@@ -161,12 +167,13 @@ fn cmd_read(perf_path: &str, out_dir: &str) -> Result<()> {
         .map(|(i, s)| (i.to_string(), format!("{}:0x{:x}:{}", s.ts, s.ip, s.event)))
         .collect();
     if !trace_pairs.is_empty() {
-        write_shard(out_dir, "trace", trace_pairs, vec!["perf", "da51", "trace"])?;
+        write_shard_privacy(out_dir, "trace", trace_pairs, vec!["perf", "da51", "trace"], private)?;
     }
 
     let n_shards = 1 + event_counts.len() + ranked_funcs.len() + ranked_ips.len().min(200) + 1;
-    eprintln!("{}: {} samples, {} functions, {} IPs, {} events → {} DA51 shards",
-        perf_path, total, func_counts.len(), ip_counts.len(), event_counts.len(), n_shards);
+    let mode = if private { " (PRIVATE — sensitive fields redacted)" } else { "" };
+    eprintln!("{}: {} samples, {} functions, {} IPs, {} events → {} DA51 shards{}",
+        perf_path, total, func_counts.len(), ip_counts.len(), event_counts.len(), n_shards, mode);
     Ok(())
 }
 
@@ -177,9 +184,21 @@ struct SampleRecord {
 }
 
 fn write_shard(dir: &str, id: &str, pairs: Vec<(String, String)>, tags: Vec<&str>) -> Result<()> {
-    let shard = Shard::new(id, Component::KeyValue { pairs })
-        .with_tags(tags.into_iter().map(|s| s.to_string()).collect());
-    fs::write(format!("{}/{}.cbor", dir, id), shard.to_cbor())?;
+    write_shard_privacy(dir, id, pairs, tags, false)
+}
+
+fn write_shard_privacy(dir: &str, id: &str, pairs: Vec<(String, String)>, tags: Vec<&str>, private: bool) -> Result<()> {
+    let tag_strings: Vec<String> = tags.into_iter().map(|s| s.to_string()).collect();
+    if private {
+        use erdfa_publish::privacy::PrivacyShard;
+        let mut ps = PrivacyShard::from_pairs(id, &pairs, tag_strings);
+        ps.redact(&PRIVATE_FIELDS);
+        fs::write(format!("{}/{}.priv.cbor", dir, id), ps.to_cbor())?;
+    } else {
+        let shard = Shard::new(id, Component::KeyValue { pairs })
+            .with_tags(tag_strings);
+        fs::write(format!("{}/{}.cbor", dir, id), shard.to_cbor())?;
+    }
     Ok(())
 }
 

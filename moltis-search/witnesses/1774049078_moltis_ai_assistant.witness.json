@@ -1,0 +1,152 @@
+{
+  "query": "moltis ai assistant",
+  "results": [
+    {
+      "title": "Moltis — A Rust-native claw you can trust",
+      "url": "https://moltis.org/",
+      "snippet": ""
+    },
+    {
+      "title": "GitHub - vitco/moltis-personal-ai: A personal AI assistant built in ...",
+      "url": "https://github.com/vitco/moltis-personal-ai",
+      "snippet": ""
+    },
+    {
+      "title": "Building a Personal AI Assistant in Pure Rust: Meet Moltis",
+      "url": "https://medium.com/@CodeCoup/building-a-personal-ai-assistant-in-pure-rust-meet-moltis-1ad97c9b1cec",
+      "snippet": ""
+    },
+    {
+      "title": "Moltis: a personal AI assistant built in Rust | Fabien Penso",
+      "url": "https://pen.so/2026/02/12/moltis-a-personal-ai-assistant-built-in-rust/",
+      "snippet": ""
+    },
+    {
+      "title": "Moltis: Rust-Native, Secure AI Assistant | Single Binary, Sandboxed",
+      "url": "https://agentskill.work/en/skills/moltis-org/moltis",
+      "snippet": ""
+    },
+    {
+      "title": "Moltis - Self Hosted AI Assistant Rust | EveryDev.ai",
+      "url": "https://www.everydev.ai/tools/moltis",
+      "snippet": ""
+    },
+    {
+      "title": "Moltis - Run a secure, private AI assistant from a single binary ...",
+      "url": "https://www.aitoolnet.com/moltis",
+      "snippet": ""
+    },
+    {
+      "title": "Introduction - Moltis Documentation",
+      "url": "https://docs.moltis.org/",
+      "snippet": ""
+    },
+    {
+      "title": "Show HN: Moltis - AI assistant with memory, tools, and self-extending ...",
+      "url": "https://news.ycombinator.com/item?id=46993587",
+      "snippet": ""
+    },
+    {
+      "title": "Moltis: Personal AI Agent for Secure Local Automation (OpenClaw ...",
+      "url": "https://www.scriptbyai.com/moltis-ai-agent/",
+      "snippet": ""
+    }
+  ],
+  "witness": {
+    "timestamp": "1774049078",
+    "request_url": "https://html.duckduckgo.com/html/?q=moltis+ai+assistant",
+    "request_headers": [
+      [
+        "User-Agent",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) moltis-search/0.1"
+      ]
+    ],
+    "response_status": 200,
+    "response_headers": [
+      [
+        "server",
+        "nginx"
+      ],
+      [
+        "date",
+        "Fri, 20 Mar 2026 23:24:38 GMT"
+      ],
+      [
+        "content-type",
+        "text/html; charset=UTF-8"
+      ],
+      [
+        "transfer-encoding",
+        "chunked"
+      ],
+      [
+        "connection",
+        "keep-alive"
+      ],
+      [
+        "vary",
+        "Accept-Encoding"
+      ],
+      [
+        "server-timing",
+        "total;dur=868;desc=\"Backend Total [n]\""
+      ],
+      [
+        "vary",
+        "Accept-Encoding"
+      ],
+      [
+        "strict-transport-security",
+        "max-age=31536000"
+      ],
+      [
+        "x-robots-tag",
+        "noindex"
+      ],
+      [
+        "permissions-policy",
+        "interest-cohort=()"
+      ],
+      [
+        "content-security-policy",
+        "default-src 'none' ; connect-src  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; manifest-src  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; media-src  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; script-src blob:  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; font-src data:  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; img-src data:  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; style-src  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; object-src 'none' ; worker-src blob: ; child-src blob:  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; frame-src blob:  https://duck.ai https://*.duck.ai https://duckduckgo.com https://*.duckduckgo.com https://duckduckgogg42xjoc72x3sjasowoarfbgcmvfimaftt6twagswzczad.onion/ https://spreadprivacy.com ; frame-ancestors 'self' ; base-uri 'self' ; block-all-mixed-content ;"
+      ],
+      [
+        "x-frame-options",
+        "SAMEORIGIN"
+      ],
+      [
+        "x-xss-protection",
+        "1;mode=block"
+      ],
+      [
+        "x-content-type-options",
+        "nosniff"
+      ],
+      [
+        "referrer-policy",
+        "origin"
+      ],
+      [
+        "expect-ct",
+        "max-age=0"
+      ],
+      [
+        "expires",
+        "Fri, 20 Mar 2026 23:24:39 GMT"
+      ],
+      [
+        "cache-control",
+        "max-age=1"
+      ],
+      [
+        "x-duckduckgo-locale",
+        "en_US"
+      ]
+    ],
+    "response_body_hash": "343cdb2df71e3ebe",
+    "response_body_bytes": 32978,
+    "elapsed_ms": 940,
+    "witness_path": "witnesses/1774049078_moltis_ai_assistant.witness.json"
+  }
+}

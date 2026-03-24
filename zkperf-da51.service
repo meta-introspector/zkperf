@@ -1,0 +1,30 @@
+[Unit]
+Description=zkperf DA51 — perf trace → DA51 CBOR shard service
+After=network.target rabbitmq-server.service
+Wants=rabbitmq-server.service
+
+[Service]
+Type=simple
+User=mdupont
+Group=mdupont
+WorkingDirectory=/var/lib/zkperf
+
+# Watch for new perf.data files, read raw binary, emit DA51 CBOR shards
+ExecStart=/opt/zkperf/bin/zkperf-record watch /var/lib/zkperf/incoming /var/lib/zkperf/shards
+
+Restart=always
+RestartSec=5
+
+Environment=ZKPERF_SHARD_DIR=/var/lib/zkperf/shards
+Environment=ZKPERF_INCOMING=/var/lib/zkperf/incoming
+Environment=AMQP_URL=amqp://localhost:5672
+Environment=RUST_LOG=info
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/zkperf
+
+[Install]
+WantedBy=multi-user.target
