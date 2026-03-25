@@ -31,6 +31,69 @@ use quote::quote;
 use sha2::{Digest, Sha256};
 use syn::{parse_macro_input, ItemFn, LitStr, LitInt};
 
+/// Zero-config instrumentation. Just add `#[zkperf]` to any function.
+/// Records timing, generates witness, posts to zkperf-service if running.
+///
+/// ```rust,ignore
+/// #[zkperf]
+/// fn my_function() -> Result<()> { ... }
+///
+/// #[zkperf]
+/// async fn my_async_fn() -> String { ... }
+/// ```
+#[proc_macro_attribute]
+pub fn zkperf(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(item as ItemFn);
+    let fn_name = &input.sig.ident;
+    let fn_name_str = fn_name.to_string();
+    let vis = &input.vis;
+    let sig = &input.sig;
+    let body = &input.block;
+    let fn_attrs = &input.attrs;
+
+    let mut hasher = Sha256::new();
+    hasher.update(fn_name_str.as_bytes());
+    let sig_hash = hex::encode(&hasher.finalize()[..16]);
+
+    let record = quote! {
+        let __ms = __t0.elapsed().as_millis() as u64;
+        ::zkperf_witness::record(::zkperf_witness::Witness {
+            context: #fn_name_str,
+            signature: #sig_hash,
+            complexity: "auto",
+            max_n: 0,
+            max_ms: 0,
+            elapsed_ms: __ms,
+            violated: false,
+            timestamp: ::zkperf_witness::now_ms(),
+            platform: ::std::env::consts::OS,
+            perf: None,
+            violations: None,
+        });
+    };
+
+    let wrapped = if sig.asyncness.is_some() {
+        quote! {
+            let __t0 = ::std::time::Instant::now();
+            let __r = (async move { #body }).await;
+            #record
+            __r
+        }
+    } else {
+        quote! {
+            let __t0 = ::std::time::Instant::now();
+            let __r = (|| #body)();
+            #record
+            __r
+        }
+    };
+
+    (quote! {
+        #(#fn_attrs)*
+        #vis #sig { #wrapped }
+    }).into()
+}
+
 #[proc_macro_attribute]
 pub fn witness_boundary(attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as ItemFn);

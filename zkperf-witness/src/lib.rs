@@ -307,6 +307,58 @@ fn save_proof(w: &Witness, proof: &zkp::WitnessProof) -> std::io::Result<()> {
     std::fs::write(dir.join(filename), json)
 }
 
+
+/// Instrument an arbitrary code block with zkperf timing + witness.
+///
+/// ```rust,ignore
+/// use zkperf_witness::zkperf_span;
+///
+/// let result = zkperf_span!("my_operation", {
+///     expensive_computation()
+/// });
+///
+/// // With the zkperf-service running, also posts to HTTP:
+/// let result = zkperf_span!("my_operation", service = true, {
+///     expensive_computation()
+/// });
+/// ```
+#[macro_export]
+macro_rules! zkperf_span {
+    ($name:expr, { $($body:tt)* }) => {{
+        let __t0 = ::std::time::Instant::now();
+        let __r = { $($body)* };
+        let __ms = __t0.elapsed().as_millis() as u64;
+        $crate::record($crate::Witness {
+            context: $name,
+            signature: "",
+            complexity: "auto",
+            max_n: 0,
+            max_ms: 0,
+            elapsed_ms: __ms,
+            violated: false,
+            timestamp: $crate::now_ms(),
+            platform: ::std::env::consts::OS,
+            perf: None,
+            violations: None,
+        });
+        __r
+    }};
+    ($name:expr, service = true, { $($body:tt)* }) => {{
+        let __r = $crate::zkperf_span!($name, { $($body)* });
+        // fire-and-forget POST to zkperf-service
+        let _ = ::std::thread::spawn(move || {
+            let _ = ::std::net::TcpStream::connect("127.0.0.1:9718").and_then(|mut s| {
+                use ::std::io::Write;
+                let body = format!(
+                    r#"{{"sig":"{}","event":"span","data_hash":"","size":0}}"#,
+                    $name
+                );
+                write!(s, "POST /witness HTTP/1.0\r\nContent-Length: {}\r\n\r\n{}", body.len(), body)
+            });
+        });
+        __r
+    }};
+}
 #[cfg(test)]
 mod tests {
     use super::*;

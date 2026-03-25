@@ -296,5 +296,89 @@
           runtimeInputs = [ pkgs.jq ];
           text = builtins.readFile ./scripts/generate-report.sh;
         };
+
+        # === kagenti-selinux: SELinux + DNS + IPv6 + systemd for all agents ===
+
+        packages.kagenti-selinux = pkgs.runCommand "kagenti-selinux" {} ''
+          mkdir -p $out/{services,hardened,selinux,dns,ipv6,lean,zkp}
+
+          # New agent .service files
+          cp ${./data/kagenti-generated/services}/*.service $out/services/
+
+          # Hardened existing .service files
+          cp ${./data/selinux-hardened}/*.service $out/hardened/
+
+          # SELinux policies
+          cp ${./data/kagenti-generated/kagenti_agents.te} $out/selinux/
+          cp ${./data/selinux-merged/policy.te} $out/selinux/zkperf_monster.te
+
+          # DNS zone
+          cp ${./data/kagenti-generated/kagenti.zone} $out/dns/
+
+          # IPv6 netplan
+          cp ${./data/kagenti-generated/99-kagenti.yaml} $out/ipv6/
+
+          # Lean4 proof
+          cp ${./data/selinux-merged/MonsterPolicy.lean} $out/lean/
+
+          # ZKP witness
+          cp ${./data/selinux-merged/zkp-witness.json} $out/zkp/
+
+          # Agent manifest
+          cp ${./data/kagenti-generated/agents.json} $out/
+
+          # Install script
+          cat > $out/install.sh << 'INSTALL'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          DIR="$(cd "$(dirname "$0")" && pwd)"
+          echo "🛡️  kagenti-selinux install from $DIR"
+
+          echo "📦 systemd units (new)..."
+          for f in "$DIR"/services/*.service; do
+            sudo cp "$f" /etc/systemd/system/
+            echo "   ✅ $(basename $f)"
+          done
+
+          echo "🛡️  systemd units (hardened)..."
+          for f in "$DIR"/hardened/*.service; do
+            sudo cp "$f" /etc/systemd/system/
+            echo "   🛡️  $(basename $f)"
+          done
+
+          sudo systemctl daemon-reload
+
+          echo "📡 DNS zone → /etc/bind/kagenti.zone"
+          sudo cp "$DIR"/dns/kagenti.zone /etc/bind/ 2>/dev/null || echo "   ⏭️  bind9 not found"
+
+          echo "🌐 IPv6 netplan → /etc/netplan/99-kagenti.yaml"
+          sudo cp "$DIR"/ipv6/99-kagenti.yaml /etc/netplan/ 2>/dev/null || echo "   ⏭️  netplan not found"
+
+          if command -v checkmodule &>/dev/null; then
+            echo "🔒 SELinux policies..."
+            for te in "$DIR"/selinux/*.te; do
+              mod="''${te%.te}.mod"
+              pp="''${te%.te}.pp"
+              checkmodule -M -m -o "$mod" "$te"
+              semodule_package -o "$pp" -m "$mod"
+              sudo semodule -i "$pp"
+              echo "   ✅ $(basename $te)"
+            done
+          fi
+
+          echo ""
+          echo "✅ Installed. ZKP witness:"
+          cat "$DIR"/zkp/zkp-witness.json | head -5
+          INSTALL
+          chmod +x $out/install.sh
+        '';
+
+        packages.kagenti-selinux-install = pkgs.writeShellApplication {
+          name = "kagenti-selinux-install";
+          runtimeInputs = [ pkgs.jq ];
+          text = ''
+            exec ${self.packages.${system}.kagenti-selinux}/install.sh "$@"
+          '';
+        };
       });
 }
