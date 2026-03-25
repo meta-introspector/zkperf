@@ -17,6 +17,20 @@ nix-check:
 
 build: nix-build
 
+# Instrumented build — records perf during cargo build, generates witness
+build-instrumented: $(RECORDINGS)
+	@echo "=== Instrumented build ==="
+	nix develop --command bash -c '\
+		$(PERF) stat -e cycles,instructions,cache-misses,branch-misses \
+			-o $(RECORDINGS)/build.stat.txt \
+			cargo build --release 2>&1 | tee $(RECORDINGS)/build.log; \
+		echo "=== Build witness ===" && \
+		cat target/release/build/zkperf-*/out/build-witness.json 2>/dev/null && echo && \
+		echo "=== Perf stats ===" && \
+		cat $(RECORDINGS)/build.stat.txt && \
+		cp target/release/build/zkperf-*/out/build-witness.json $(RECORDINGS)/ 2>/dev/null; \
+		echo "=== Done ==="'
+
 check:
 	nix develop --command cargo check
 

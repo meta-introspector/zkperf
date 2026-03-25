@@ -38,11 +38,19 @@ struct State {
 }
 
 fn main() {
+    eprintln!("zkperf-service build: {}", env!("ZKPERF_BUILD_WITNESS"));
+
     let data_dir = format!(
         "{}/.zkperf/service",
         std::env::var("HOME").unwrap_or_else(|_| "/tmp".into())
     );
     std::fs::create_dir_all(&data_dir).ok();
+
+    // Write build witness to data dir
+    let _ = std::fs::write(
+        format!("{}/build-witness.json", data_dir),
+        env!("ZKPERF_BUILD_WITNESS"),
+    );
 
     let state = Arc::new(Mutex::new(State {
         sessions: HashMap::new(),
@@ -85,8 +93,10 @@ fn parse_req(raw: &str) -> (String, String, String) {
 }
 
 fn route(method: &str, path: &str, body: &str, state: &Arc<Mutex<State>>) -> (String, String) {
-    match (method, path) {
+    let t0 = std::time::Instant::now();
+    let (status, resp) = match (method, path) {
         ("GET", "/health") => ("200 OK".into(), r#"{"status":"ok"}"#.into()),
+        ("GET", "/build") => ("200 OK".into(), env!("ZKPERF_BUILD_WITNESS").into()),
         ("POST", "/attach") => cmd_attach(body, state),
         ("POST", "/detach") => cmd_detach(body, state),
         ("POST", "/boundary") => cmd_boundary(body, state),
@@ -97,7 +107,10 @@ fn route(method: &str, path: &str, body: &str, state: &Arc<Mutex<State>>) -> (St
             cmd_get_witness(sig, state)
         }
         _ => ("404 Not Found".into(), r#"{"error":"not found"}"#.into()),
-    }
+    };
+    let ms = t0.elapsed().as_millis();
+    if ms > 0 { eprintln!("{} {} → {} ({}ms)", method, path, &status[..3], ms); }
+    (status, resp)
 }
 
 fn cmd_attach(body: &str, state: &Arc<Mutex<State>>) -> (String, String) {

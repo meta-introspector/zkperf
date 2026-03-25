@@ -1,0 +1,20 @@
+# started on Wed Mar 25 19:30:54 2026
+
+
+ Performance counter stats for 'cargo build --release -p zkperf':
+
+    54,863,388,370      cpu_atom/cycles/                                                        (35.81%)
+    68,543,823,740      cpu_core/cycles/                                                        (64.19%)
+    58,852,727,789      cpu_atom/instructions/           #    1.07  insn per cycle              (35.81%)
+    89,780,954,144      cpu_core/instructions/           #    1.31  insn per cycle              (64.19%)
+       111,527,690      cpu_atom/cache-misses/                                                  (35.81%)
+       131,966,690      cpu_core/cache-misses/                                                  (64.19%)
+       556,845,821      cpu_atom/branch-misses/                                                 (35.81%)
+       639,080,246      cpu_core/branch-misses/                                                 (64.19%)
+
+       2.477469786 seconds time elapsed
+
+      13.197311000 seconds user
+       0.588158000 seconds sys
+
+
