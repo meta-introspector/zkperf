@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "zkperf-macros", "zkperf-witness"]
+members = [".", "zkperf-macros", "zkperf-witness", "cargo-zkperf"]
 
 [package]
 name = "zkperf"
