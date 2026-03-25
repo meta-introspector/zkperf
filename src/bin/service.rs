@@ -90,6 +90,7 @@ fn route(method: &str, path: &str, body: &str, state: &Arc<Mutex<State>>) -> (St
         ("POST", "/attach") => cmd_attach(body, state),
         ("POST", "/detach") => cmd_detach(body, state),
         ("POST", "/boundary") => cmd_boundary(body, state),
+        ("POST", "/witness") => cmd_record_witness(body, state),
         ("GET", "/witnesses") => cmd_list_witnesses(state),
         _ if path.starts_with("/witnesses/") => {
             let sig = &path["/witnesses/".len()..];
@@ -205,6 +206,37 @@ fn cmd_boundary(body: &str, state: &Arc<Mutex<State>>) -> (String, String) {
     } else {
         ("404 Not Found".into(), r#"{"error":"pid not attached"}"#.into())
     }
+}
+
+/// POST /witness — record a witness directly without perf attachment
+/// Body: {"sig": "stego-exchange", "event": "meme-upload", "data_hash": "sha256hex", "size": 316}
+fn cmd_record_witness(body: &str, _state: &Arc<Mutex<State>>) -> (String, String) {
+    let v: serde_json::Value = match serde_json::from_str(body) {
+        Ok(v) => v, Err(_) => return ("400 Bad Request".into(), r#"{"error":"bad json"}"#.into()),
+    };
+    let sig = v["sig"].as_str().unwrap_or("unknown");
+    let event = v["event"].as_str().unwrap_or("event");
+    let data_hash = v["data_hash"].as_str().unwrap_or("");
+    let size = v["size"].as_u64().unwrap_or(0);
+
+    let ts = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
+
+    let witness = serde_json::json!({
+        "sig": sig,
+        "event": event,
+        "data_hash": data_hash,
+        "size": size,
+        "timestamp": ts,
+        "source": "direct",
+    });
+
+    let witness_dir = format!("{}/.zkperf/witnesses", std::env::var("HOME").unwrap_or_default());
+    std::fs::create_dir_all(&witness_dir).ok();
+    let path = format!("{}/{}_{}.json", witness_dir, sig, ts);
+    std::fs::write(&path, serde_json::to_string_pretty(&witness).unwrap()).ok();
+
+    ("200 OK".into(), serde_json::to_string(&witness).unwrap())
 }
 
 fn cmd_list_witnesses(state: &Arc<Mutex<State>>) -> (String, String) {

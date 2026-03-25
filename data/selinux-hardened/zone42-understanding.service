@@ -1,0 +1,20 @@
+[Unit]
+Description=Zone 42 UUCP Message Understanding Service
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/mnt/data1/zones/42
+ExecStart=/usr/bin/python3 /mnt/data1/zones/42/understand_zone42.py
+StandardOutput=journal
+StandardError=journal
+
+
+# === zkperf hardening (auto-generated) ===
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

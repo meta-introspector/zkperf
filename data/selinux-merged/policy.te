@@ -1,0 +1,330 @@
+policy_module(zkperf_monster, 1.0.0)
+
+require {
+    type bin_t; type usr_t; type tmp_t; type node_t;
+    class file { read write getattr open create execute };
+    class dir { read search open };
+    class tcp_socket { create connect read write };
+    class udp_socket { create connect read write };
+    class process { setuid setgid signal ptrace };
+}
+
+# === activity_profile (shard 31) ===
+type svc_activity_profile_t;
+allow svc_activity_profile_t node_t:tcp_socket { connect };
+allow svc_activity_profile_t usr_t:file { read getattr open };
+allow svc_activity_profile_t usr_t:file { read getattr open };
+allow svc_activity_profile_t node_t:tcp_socket { read };
+allow svc_activity_profile_t node_t:tcp_socket { write };
+
+# === agent_docker (shard 27) ===
+type svc_agent_docker_t;
+allow svc_agent_docker_t usr_t:file { read getattr open };
+allow svc_agent_docker_t usr_t:file { read getattr open };
+
+# === eco_research (shard 37) ===
+type svc_eco_research_t;
+allow svc_eco_research_t node_t:tcp_socket { connect };
+allow svc_eco_research_t usr_t:file { read getattr open };
+allow svc_eco_research_t usr_t:file { read getattr open };
+allow svc_eco_research_t node_t:tcp_socket { read };
+allow svc_eco_research_t node_t:tcp_socket { write };
+
+# === fractran_meta_compiler (shard 58) ===
+type svc_fractran_meta_compiler_t;
+allow svc_fractran_meta_compiler_t node_t:tcp_socket { connect };
+allow svc_fractran_meta_compiler_t usr_t:file { read getattr open };
+allow svc_fractran_meta_compiler_t usr_t:file { read getattr open };
+allow svc_fractran_meta_compiler_t node_t:tcp_socket { read };
+type svc_fractran_meta_compiler_t_rw_t;
+allow svc_fractran_meta_compiler_t svc_fractran_meta_compiler_t_rw_t:file { read write open create };
+allow svc_fractran_meta_compiler_t node_t:tcp_socket { write };
+neverallow svc_fractran_meta_compiler_t self:process { setuid };
+
+# === fractranllama (shard 50) ===
+type svc_fractranllama_t;
+allow svc_fractranllama_t node_t:tcp_socket { connect };
+allow svc_fractranllama_t usr_t:file { read getattr open };
+allow svc_fractranllama_t usr_t:file { read getattr open };
+allow svc_fractranllama_t node_t:tcp_socket { read };
+allow svc_fractranllama_t node_t:tcp_socket { write };
+neverallow svc_fractranllama_t self:process { setuid };
+
+# === harbor_shard58 (shard 2) ===
+type svc_harbor_shard58_t;
+allow svc_harbor_shard58_t node_t:tcp_socket { connect };
+allow svc_harbor_shard58_t usr_t:file { read getattr open };
+allow svc_harbor_shard58_t usr_t:file { read getattr open };
+allow svc_harbor_shard58_t usr_t:file { read getattr open };
+allow svc_harbor_shard58_t node_t:tcp_socket { read };
+type svc_harbor_shard58_t_rw_t;
+allow svc_harbor_shard58_t svc_harbor_shard58_t_rw_t:file { read write open create };
+type svc_harbor_shard58_t_rw_t;
+allow svc_harbor_shard58_t svc_harbor_shard58_t_rw_t:file { read write open create };
+allow svc_harbor_shard58_t node_t:tcp_socket { write };
+neverallow svc_harbor_shard58_t self:process { setuid };
+
+# === kagenti_portal (shard 59) ===
+type svc_kagenti_portal_t;
+allow svc_kagenti_portal_t node_t:tcp_socket { connect };
+allow svc_kagenti_portal_t usr_t:file { read getattr open };
+allow svc_kagenti_portal_t usr_t:file { read getattr open };
+allow svc_kagenti_portal_t node_t:tcp_socket { read };
+allow svc_kagenti_portal_t node_t:tcp_socket { write };
+neverallow svc_kagenti_portal_t self:process { setuid };
+
+# === kiro1_shard42 (shard 31) ===
+type svc_kiro1_shard42_t;
+allow svc_kiro1_shard42_t node_t:tcp_socket { connect };
+allow svc_kiro1_shard42_t usr_t:file { read getattr open };
+allow svc_kiro1_shard42_t usr_t:file { read getattr open };
+allow svc_kiro1_shard42_t node_t:tcp_socket { read };
+allow svc_kiro1_shard42_t node_t:tcp_socket { write };
+neverallow svc_kiro1_shard42_t self:process { setuid };
+
+# === kiro_feed_uucp (shard 66) ===
+type svc_kiro_feed_uucp_t;
+allow svc_kiro_feed_uucp_t node_t:tcp_socket { connect };
+allow svc_kiro_feed_uucp_t usr_t:file { read getattr open };
+allow svc_kiro_feed_uucp_t usr_t:file { read getattr open };
+allow svc_kiro_feed_uucp_t node_t:tcp_socket { read };
+allow svc_kiro_feed_uucp_t node_t:tcp_socket { write };
+neverallow svc_kiro_feed_uucp_t self:process { setuid };
+
+# === kiro_qms (shard 61) ===
+type svc_kiro_qms_t;
+allow svc_kiro_qms_t node_t:tcp_socket { connect };
+allow svc_kiro_qms_t usr_t:file { read getattr open };
+allow svc_kiro_qms_t usr_t:file { read getattr open };
+allow svc_kiro_qms_t node_t:tcp_socket { read };
+allow svc_kiro_qms_t node_t:tcp_socket { write };
+neverallow svc_kiro_qms_t self:process { setuid };
+
+# === kiro_session (shard 15) ===
+type svc_kiro_session_t;
+allow svc_kiro_session_t node_t:tcp_socket { connect };
+allow svc_kiro_session_t usr_t:file { read getattr open };
+allow svc_kiro_session_t usr_t:file { read getattr open };
+allow svc_kiro_session_t node_t:tcp_socket { read };
+allow svc_kiro_session_t node_t:tcp_socket { write };
+neverallow svc_kiro_session_t self:process { setuid };
+
+# === moltis (shard 65) ===
+type svc_moltis_t;
+allow svc_moltis_t node_t:tcp_socket { connect };
+allow svc_moltis_t usr_t:file { read getattr open };
+allow svc_moltis_t usr_t:file { read getattr open };
+allow svc_moltis_t node_t:tcp_socket { read };
+allow svc_moltis_t node_t:tcp_socket { write };
+neverallow svc_moltis_t self:process { setuid };
+
+# === monster_zone_0 (shard 58) ===
+type svc_monster_zone_0_t;
+allow svc_monster_zone_0_t node_t:tcp_socket { connect };
+allow svc_monster_zone_0_t usr_t:file { read getattr open };
+allow svc_monster_zone_0_t usr_t:file { read getattr open };
+allow svc_monster_zone_0_t node_t:tcp_socket { read };
+allow svc_monster_zone_0_t node_t:tcp_socket { write };
+neverallow svc_monster_zone_0_t self:process { setuid };
+
+# === monster_zone_1 (shard 26) ===
+type svc_monster_zone_1_t;
+allow svc_monster_zone_1_t node_t:tcp_socket { connect };
+allow svc_monster_zone_1_t usr_t:file { read getattr open };
+allow svc_monster_zone_1_t usr_t:file { read getattr open };
+allow svc_monster_zone_1_t node_t:tcp_socket { read };
+allow svc_monster_zone_1_t node_t:tcp_socket { write };
+neverallow svc_monster_zone_1_t self:process { setuid };
+
+# === monster_zone_2 (shard 44) ===
+type svc_monster_zone_2_t;
+allow svc_monster_zone_2_t node_t:tcp_socket { connect };
+allow svc_monster_zone_2_t usr_t:file { read getattr open };
+allow svc_monster_zone_2_t usr_t:file { read getattr open };
+allow svc_monster_zone_2_t node_t:tcp_socket { read };
+allow svc_monster_zone_2_t node_t:tcp_socket { write };
+neverallow svc_monster_zone_2_t self:process { setuid };
+
+# === monster_zone_3 (shard 37) ===
+type svc_monster_zone_3_t;
+allow svc_monster_zone_3_t node_t:tcp_socket { connect };
+allow svc_monster_zone_3_t usr_t:file { read getattr open };
+allow svc_monster_zone_3_t usr_t:file { read getattr open };
+allow svc_monster_zone_3_t node_t:tcp_socket { read };
+allow svc_monster_zone_3_t node_t:tcp_socket { write };
+neverallow svc_monster_zone_3_t self:process { setuid };
+
+# === monster_zone_4 (shard 35) ===
+type svc_monster_zone_4_t;
+allow svc_monster_zone_4_t node_t:tcp_socket { connect };
+allow svc_monster_zone_4_t usr_t:file { read getattr open };
+allow svc_monster_zone_4_t usr_t:file { read getattr open };
+allow svc_monster_zone_4_t node_t:tcp_socket { read };
+allow svc_monster_zone_4_t node_t:tcp_socket { write };
+neverallow svc_monster_zone_4_t self:process { setuid };
+
+# === monster_zone_5 (shard 69) ===
+type svc_monster_zone_5_t;
+allow svc_monster_zone_5_t node_t:tcp_socket { connect };
+allow svc_monster_zone_5_t usr_t:file { read getattr open };
+allow svc_monster_zone_5_t usr_t:file { read getattr open };
+allow svc_monster_zone_5_t node_t:tcp_socket { read };
+allow svc_monster_zone_5_t node_t:tcp_socket { write };
+neverallow svc_monster_zone_5_t self:process { setuid };
+
+# === monster_zone_6 (shard 35) ===
+type svc_monster_zone_6_t;
+allow svc_monster_zone_6_t node_t:tcp_socket { connect };
+allow svc_monster_zone_6_t usr_t:file { read getattr open };
+allow svc_monster_zone_6_t usr_t:file { read getattr open };
+allow svc_monster_zone_6_t node_t:tcp_socket { read };
+allow svc_monster_zone_6_t node_t:tcp_socket { write };
+neverallow svc_monster_zone_6_t self:process { setuid };
+
+# === monster_zone_7 (shard 41) ===
+type svc_monster_zone_7_t;
+allow svc_monster_zone_7_t node_t:tcp_socket { connect };
+allow svc_monster_zone_7_t usr_t:file { read getattr open };
+allow svc_monster_zone_7_t usr_t:file { read getattr open };
+allow svc_monster_zone_7_t node_t:tcp_socket { read };
+allow svc_monster_zone_7_t node_t:tcp_socket { write };
+neverallow svc_monster_zone_7_t self:process { setuid };
+
+# === monster_zone_8 (shard 22) ===
+type svc_monster_zone_8_t;
+allow svc_monster_zone_8_t node_t:tcp_socket { connect };
+allow svc_monster_zone_8_t usr_t:file { read getattr open };
+allow svc_monster_zone_8_t usr_t:file { read getattr open };
+allow svc_monster_zone_8_t node_t:tcp_socket { read };
+allow svc_monster_zone_8_t node_t:tcp_socket { write };
+neverallow svc_monster_zone_8_t self:process { setuid };
+
+# === monster_zone_9 (shard 5) ===
+type svc_monster_zone_9_t;
+allow svc_monster_zone_9_t node_t:tcp_socket { connect };
+allow svc_monster_zone_9_t usr_t:file { read getattr open };
+allow svc_monster_zone_9_t usr_t:file { read getattr open };
+allow svc_monster_zone_9_t node_t:tcp_socket { read };
+allow svc_monster_zone_9_t node_t:tcp_socket { write };
+neverallow svc_monster_zone_9_t self:process { setuid };
+
+# === nixwars_frens (shard 25) ===
+type svc_nixwars_frens_t;
+allow svc_nixwars_frens_t node_t:tcp_socket { connect };
+allow svc_nixwars_frens_t usr_t:file { read getattr open };
+allow svc_nixwars_frens_t usr_t:file { read getattr open };
+allow svc_nixwars_frens_t node_t:tcp_socket { read };
+allow svc_nixwars_frens_t node_t:tcp_socket { write };
+neverallow svc_nixwars_frens_t self:process { setuid };
+
+# === openclaw (shard 61) ===
+type svc_openclaw_t;
+allow svc_openclaw_t node_t:tcp_socket { connect };
+allow svc_openclaw_t usr_t:file { read getattr open };
+allow svc_openclaw_t usr_t:file { read getattr open };
+allow svc_openclaw_t node_t:tcp_socket { read };
+allow svc_openclaw_t node_t:tcp_socket { write };
+neverallow svc_openclaw_t self:process { setuid };
+
+# === pastebin (shard 38) ===
+type svc_pastebin_t;
+allow svc_pastebin_t node_t:tcp_socket { connect };
+allow svc_pastebin_t usr_t:file { read getattr open };
+allow svc_pastebin_t usr_t:file { read getattr open };
+allow svc_pastebin_t node_t:tcp_socket { read };
+allow svc_pastebin_t node_t:tcp_socket { write };
+neverallow svc_pastebin_t self:process { setuid };
+
+# === rust_compiler (shard 15) ===
+type svc_rust_compiler_t;
+allow svc_rust_compiler_t usr_t:file { read getattr open };
+allow svc_rust_compiler_t usr_t:file { read getattr open };
+
+# === rust_mcp_services (shard 28) ===
+type svc_rust_mcp_services_t;
+allow svc_rust_mcp_services_t node_t:tcp_socket { connect };
+allow svc_rust_mcp_services_t usr_t:file { read getattr open };
+allow svc_rust_mcp_services_t usr_t:file { read getattr open };
+allow svc_rust_mcp_services_t node_t:tcp_socket { read };
+allow svc_rust_mcp_services_t node_t:tcp_socket { write };
+neverallow svc_rust_mcp_services_t self:process { setuid };
+
+# === snm_paste_server (shard 34) ===
+type svc_snm_paste_server_t;
+allow svc_snm_paste_server_t node_t:tcp_socket { connect };
+allow svc_snm_paste_server_t usr_t:file { read getattr open };
+allow svc_snm_paste_server_t usr_t:file { read getattr open };
+allow svc_snm_paste_server_t node_t:tcp_socket { read };
+allow svc_snm_paste_server_t node_t:tcp_socket { write };
+
+# === solana (shard 51) ===
+type svc_solana_t;
+allow svc_solana_t node_t:tcp_socket { connect };
+allow svc_solana_t usr_t:file { read getattr open };
+allow svc_solana_t usr_t:file { read getattr open };
+allow svc_solana_t node_t:tcp_socket { read };
+allow svc_solana_t node_t:tcp_socket { write };
+
+# === solfunmeme_service (shard 58) ===
+type svc_solfunmeme_service_t;
+allow svc_solfunmeme_service_t node_t:tcp_socket { connect };
+allow svc_solfunmeme_service_t usr_t:file { read getattr open };
+allow svc_solfunmeme_service_t usr_t:file { read getattr open };
+allow svc_solfunmeme_service_t node_t:tcp_socket { read };
+allow svc_solfunmeme_service_t node_t:tcp_socket { write };
+neverallow svc_solfunmeme_service_t self:process { setuid };
+
+# === unified_p2p_server (shard 17) ===
+type svc_unified_p2p_server_t;
+allow svc_unified_p2p_server_t node_t:tcp_socket { connect };
+allow svc_unified_p2p_server_t usr_t:file { read getattr open };
+allow svc_unified_p2p_server_t node_t:tcp_socket { read };
+type svc_unified_p2p_server_t_rw_t;
+allow svc_unified_p2p_server_t svc_unified_p2p_server_t_rw_t:file { read write open create };
+allow svc_unified_p2p_server_t node_t:tcp_socket { write };
+neverallow svc_unified_p2p_server_t self:process { setuid };
+
+# === uucp_solana_gateway (shard 36) ===
+type svc_uucp_solana_gateway_t;
+allow svc_uucp_solana_gateway_t node_t:tcp_socket { connect };
+allow svc_uucp_solana_gateway_t usr_t:file { read getattr open };
+allow svc_uucp_solana_gateway_t usr_t:file { read getattr open };
+allow svc_uucp_solana_gateway_t node_t:tcp_socket { read };
+allow svc_uucp_solana_gateway_t node_t:tcp_socket { write };
+
+# === wg_stego_tunnel (shard 5) ===
+type svc_wg_stego_tunnel_t;
+allow svc_wg_stego_tunnel_t node_t:tcp_socket { connect };
+allow svc_wg_stego_tunnel_t usr_t:file { read getattr open };
+allow svc_wg_stego_tunnel_t usr_t:file { read getattr open };
+allow svc_wg_stego_tunnel_t node_t:tcp_socket { read };
+allow svc_wg_stego_tunnel_t node_t:tcp_socket { write };
+neverallow svc_wg_stego_tunnel_t self:process { setuid };
+
+# === zkperf_da51 (shard 26) ===
+type svc_zkperf_da51_t;
+allow svc_zkperf_da51_t node_t:tcp_socket { connect };
+allow svc_zkperf_da51_t usr_t:file { read getattr open };
+allow svc_zkperf_da51_t usr_t:file { read getattr open };
+allow svc_zkperf_da51_t node_t:tcp_socket { read };
+type svc_zkperf_da51_t_rw_t;
+allow svc_zkperf_da51_t svc_zkperf_da51_t_rw_t:file { read write open create };
+allow svc_zkperf_da51_t node_t:tcp_socket { write };
+neverallow svc_zkperf_da51_t self:process { setuid };
+
+# === zone42_understanding (shard 63) ===
+type svc_zone42_understanding_t;
+allow svc_zone42_understanding_t node_t:tcp_socket { connect };
+allow svc_zone42_understanding_t usr_t:file { read getattr open };
+allow svc_zone42_understanding_t usr_t:file { read getattr open };
+allow svc_zone42_understanding_t node_t:tcp_socket { read };
+allow svc_zone42_understanding_t node_t:tcp_socket { write };
+
+# === zos_server (shard 7) ===
+type svc_zos_server_t;
+allow svc_zos_server_t node_t:tcp_socket { connect };
+allow svc_zos_server_t usr_t:file { read getattr open };
+allow svc_zos_server_t usr_t:file { read getattr open };
+allow svc_zos_server_t node_t:tcp_socket { read };
+allow svc_zos_server_t node_t:tcp_socket { write };
+neverallow svc_zos_server_t self:process { setuid };

@@ -1,0 +1,23 @@
+[Unit]
+Description=Eco Research Agent - Umberto Eco inspired research with Spool
+After=network.target spool-gui.service
+
+[Service]
+Type=simple
+User=mdupont
+WorkingDirectory=/home/mdupont/spool
+ExecStart=/nix/store/HASH-eco-research-server/bin/eco-research-server
+Restart=always
+Environment="ECO_PORT=8091"
+Environment="SPOOL_DATA=/home/mdupont/spool/data"
+Environment="PASTEBIN_DIR=/home/mdupont/spool/uucp/pastebin"
+
+
+# === zkperf hardening (auto-generated) ===
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,52 @@
+[Unit]
+Description=Solana Validator
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=solana
+LimitNOFILE=1000000
+LogRateLimitIntervalSec=0
+
+#--log /var/db/solana/solana-rpc.log \ 
+# --accounts /var/db/solana/accounts
+ExecStart=/opt/solana/solana-release/bin/solana-test-validator --log  --ledger /var/db/solana/test-ledger   -u localhost  --rpc-port 8899  --gossip-port 8001 --dynamic-port-range 8002-8021  --limit-ledger-size 10
+
+# --enable-rpc-transaction-history
+# --no-port-check
+# --no-untrusted-rpc
+# --health-check-slot-distance 500
+# --enable-cpi-and-log-storage
+# --no-accounts-db-index-hashing
+# --enable-rpc-bigtable-ledger-storage
+
+#--identity /data/validator-keypair.json            
+#--known-validator             
+#--full-rpc-api
+#--private-rpc",            
+#--enable-rpc-transaction-history
+#--no-os-cpu-stats-reporting
+#--no-os-memory-stats-reporting
+#--no-os-network-stats-reporting
+
+
+
+
+
+# === zkperf hardening (auto-generated) ===
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
+
+
+# sources
+# https://gist.github.com/yihau/c0f3012e51940507fe3bfb05f9785284
+# https://gist.github.com/arno01/4ff3a5cf90a856a2f2ab207ecbe367ec
+# https://gist.github.com/iamvon/548cdb5af7c7ea386628c3504cd07d43

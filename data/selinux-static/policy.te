@@ -1,0 +1,567 @@
+policy_module(zkperf_services, 1.0.0)
+
+require {
+    type unconfined_t;
+    type httpd_t;
+    type bin_t;
+    type usr_t;
+    type tmp_t;
+    type node_t;
+    class process { transition signal };
+    class file { read write getattr open create };
+    class dir { read search open };
+    class tcp_socket { create connect read write };
+    class udp_socket { create connect read write };
+}
+
+# === zone42_understanding ===
+type svc_zone42_understanding_t;
+
+# Read: workdir + exec paths
+allow svc_zone42_understanding_t usr_t:file { read getattr open };
+allow svc_zone42_understanding_t usr_t:dir { read search open };
+allow svc_zone42_understanding_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_zone42_understanding_t node_t:tcp_socket { create connect read write };
+allow svc_zone42_understanding_t node_t:udp_socket { create connect read write };
+
+# === fractran_meta_compiler ===
+type svc_fractran_meta_compiler_t;
+
+# Read: workdir + exec paths
+allow svc_fractran_meta_compiler_t usr_t:file { read getattr open };
+allow svc_fractran_meta_compiler_t usr_t:dir { read search open };
+allow svc_fractran_meta_compiler_t bin_t:file { read getattr open execute };
+# Write: /home/mdupont/projects/cicadia71/shards/fractran_meta_compiler, /home/mdupont/uucp/spool
+type svc_fractran_meta_compiler_t_rw_t;
+allow svc_fractran_meta_compiler_t svc_fractran_meta_compiler_t_rw_t:file { read write getattr open create };
+allow svc_fractran_meta_compiler_t svc_fractran_meta_compiler_t_rw_t:dir { read search open };
+# Network access
+allow svc_fractran_meta_compiler_t node_t:tcp_socket { create connect read write };
+allow svc_fractran_meta_compiler_t node_t:udp_socket { create connect read write };
+allow svc_fractran_meta_compiler_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_fractran_meta_compiler_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_fractran_meta_compiler_t usr_t:file { write append };
+
+# === uucp_solana_gateway ===
+type svc_uucp_solana_gateway_t;
+
+# Read: workdir + exec paths
+allow svc_uucp_solana_gateway_t usr_t:file { read getattr open };
+allow svc_uucp_solana_gateway_t usr_t:dir { read search open };
+allow svc_uucp_solana_gateway_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_uucp_solana_gateway_t node_t:tcp_socket { create connect read write };
+allow svc_uucp_solana_gateway_t node_t:udp_socket { create connect read write };
+
+# === harbor_shard58 ===
+type svc_harbor_shard58_t;
+
+# Read: workdir + exec paths
+allow svc_harbor_shard58_t usr_t:file { read getattr open };
+allow svc_harbor_shard58_t usr_t:dir { read search open };
+allow svc_harbor_shard58_t bin_t:file { read getattr open execute };
+# Write: /tmp, /home/mdupont/introspector/shard58/harbor
+type svc_harbor_shard58_t_rw_t;
+allow svc_harbor_shard58_t svc_harbor_shard58_t_rw_t:file { read write getattr open create };
+allow svc_harbor_shard58_t svc_harbor_shard58_t_rw_t:dir { read search open };
+# Network access
+allow svc_harbor_shard58_t node_t:tcp_socket { create connect read write };
+allow svc_harbor_shard58_t node_t:udp_socket { create connect read write };
+allow svc_harbor_shard58_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_harbor_shard58_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_harbor_shard58_t usr_t:file { write append };
+
+# === zkperf_da51 ===
+type svc_zkperf_da51_t;
+
+# Read: workdir + exec paths
+allow svc_zkperf_da51_t usr_t:file { read getattr open };
+allow svc_zkperf_da51_t usr_t:dir { read search open };
+allow svc_zkperf_da51_t bin_t:file { read getattr open execute };
+# Write: /var/lib/zkperf
+type svc_zkperf_da51_t_rw_t;
+allow svc_zkperf_da51_t svc_zkperf_da51_t_rw_t:file { read write getattr open create };
+allow svc_zkperf_da51_t svc_zkperf_da51_t_rw_t:dir { read search open };
+# Network access
+allow svc_zkperf_da51_t node_t:tcp_socket { create connect read write };
+allow svc_zkperf_da51_t node_t:udp_socket { create connect read write };
+allow svc_zkperf_da51_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_zkperf_da51_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_zkperf_da51_t usr_t:file { write append };
+
+# === snm_paste_server ===
+type svc_snm_paste_server_t;
+
+# Read: workdir + exec paths
+allow svc_snm_paste_server_t usr_t:file { read getattr open };
+allow svc_snm_paste_server_t usr_t:dir { read search open };
+allow svc_snm_paste_server_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_snm_paste_server_t node_t:tcp_socket { create connect read write };
+allow svc_snm_paste_server_t node_t:udp_socket { create connect read write };
+
+# === activity_profile ===
+type svc_activity_profile_t;
+
+# Read: workdir + exec paths
+allow svc_activity_profile_t usr_t:file { read getattr open };
+allow svc_activity_profile_t usr_t:dir { read search open };
+allow svc_activity_profile_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_activity_profile_t node_t:tcp_socket { create connect read write };
+allow svc_activity_profile_t node_t:udp_socket { create connect read write };
+
+# === eco_research ===
+type svc_eco_research_t;
+
+# Read: workdir + exec paths
+allow svc_eco_research_t usr_t:file { read getattr open };
+allow svc_eco_research_t usr_t:dir { read search open };
+allow svc_eco_research_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_eco_research_t node_t:tcp_socket { create connect read write };
+allow svc_eco_research_t node_t:udp_socket { create connect read write };
+
+# === agent_docker ===
+type svc_agent_docker_t;
+
+# Read: workdir + exec paths
+allow svc_agent_docker_t usr_t:file { read getattr open };
+allow svc_agent_docker_t usr_t:dir { read search open };
+allow svc_agent_docker_t bin_t:file { read getattr open execute };
+# No network
+neverallow svc_agent_docker_t node_t:tcp_socket { create connect };
+
+# === rust_compiler ===
+type svc_rust_compiler_t;
+
+# Read: workdir + exec paths
+allow svc_rust_compiler_t usr_t:file { read getattr open };
+allow svc_rust_compiler_t usr_t:dir { read search open };
+allow svc_rust_compiler_t bin_t:file { read getattr open execute };
+# No network
+neverallow svc_rust_compiler_t node_t:tcp_socket { create connect };
+
+# === solana ===
+type svc_solana_t;
+
+# Read: workdir + exec paths
+allow svc_solana_t usr_t:file { read getattr open };
+allow svc_solana_t usr_t:dir { read search open };
+allow svc_solana_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_solana_t node_t:tcp_socket { create connect read write };
+allow svc_solana_t node_t:udp_socket { create connect read write };
+
+# === unified_p2p_server ===
+type svc_unified_p2p_server_t;
+
+# Read: workdir + exec paths
+allow svc_unified_p2p_server_t usr_t:file { read getattr open };
+allow svc_unified_p2p_server_t usr_t:dir { read search open };
+allow svc_unified_p2p_server_t bin_t:file { read getattr open execute };
+# Write: /opt/unified-p2p-server
+type svc_unified_p2p_server_t_rw_t;
+allow svc_unified_p2p_server_t svc_unified_p2p_server_t_rw_t:file { read write getattr open create };
+allow svc_unified_p2p_server_t svc_unified_p2p_server_t_rw_t:dir { read search open };
+# Network access
+allow svc_unified_p2p_server_t node_t:tcp_socket { create connect read write };
+allow svc_unified_p2p_server_t node_t:udp_socket { create connect read write };
+allow svc_unified_p2p_server_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_unified_p2p_server_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_unified_p2p_server_t usr_t:file { write append };
+
+# === monster_zone_0 ===
+type svc_monster_zone_0_t;
+
+# Read: workdir + exec paths
+allow svc_monster_zone_0_t usr_t:file { read getattr open };
+allow svc_monster_zone_0_t usr_t:dir { read search open };
+allow svc_monster_zone_0_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_monster_zone_0_t node_t:tcp_socket { create connect read write };
+allow svc_monster_zone_0_t node_t:udp_socket { create connect read write };
+allow svc_monster_zone_0_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_monster_zone_0_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_monster_zone_0_t usr_t:file { write append };
+
+# === monster_zone_1 ===
+type svc_monster_zone_1_t;
+
+# Read: workdir + exec paths
+allow svc_monster_zone_1_t usr_t:file { read getattr open };
+allow svc_monster_zone_1_t usr_t:dir { read search open };
+allow svc_monster_zone_1_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_monster_zone_1_t node_t:tcp_socket { create connect read write };
+allow svc_monster_zone_1_t node_t:udp_socket { create connect read write };
+allow svc_monster_zone_1_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_monster_zone_1_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_monster_zone_1_t usr_t:file { write append };
+
+# === monster_zone_2 ===
+type svc_monster_zone_2_t;
+
+# Read: workdir + exec paths
+allow svc_monster_zone_2_t usr_t:file { read getattr open };
+allow svc_monster_zone_2_t usr_t:dir { read search open };
+allow svc_monster_zone_2_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_monster_zone_2_t node_t:tcp_socket { create connect read write };
+allow svc_monster_zone_2_t node_t:udp_socket { create connect read write };
+allow svc_monster_zone_2_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_monster_zone_2_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_monster_zone_2_t usr_t:file { write append };
+
+# === monster_zone_3 ===
+type svc_monster_zone_3_t;
+
+# Read: workdir + exec paths
+allow svc_monster_zone_3_t usr_t:file { read getattr open };
+allow svc_monster_zone_3_t usr_t:dir { read search open };
+allow svc_monster_zone_3_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_monster_zone_3_t node_t:tcp_socket { create connect read write };
+allow svc_monster_zone_3_t node_t:udp_socket { create connect read write };
+allow svc_monster_zone_3_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_monster_zone_3_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_monster_zone_3_t usr_t:file { write append };
+
+# === monster_zone_4 ===
+type svc_monster_zone_4_t;
+
+# Read: workdir + exec paths
+allow svc_monster_zone_4_t usr_t:file { read getattr open };
+allow svc_monster_zone_4_t usr_t:dir { read search open };
+allow svc_monster_zone_4_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_monster_zone_4_t node_t:tcp_socket { create connect read write };
+allow svc_monster_zone_4_t node_t:udp_socket { create connect read write };
+allow svc_monster_zone_4_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_monster_zone_4_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_monster_zone_4_t usr_t:file { write append };
+
+# === monster_zone_5 ===
+type svc_monster_zone_5_t;
+
+# Read: workdir + exec paths
+allow svc_monster_zone_5_t usr_t:file { read getattr open };
+allow svc_monster_zone_5_t usr_t:dir { read search open };
+allow svc_monster_zone_5_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_monster_zone_5_t node_t:tcp_socket { create connect read write };
+allow svc_monster_zone_5_t node_t:udp_socket { create connect read write };
+allow svc_monster_zone_5_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_monster_zone_5_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_monster_zone_5_t usr_t:file { write append };
+
+# === monster_zone_6 ===
+type svc_monster_zone_6_t;
+
+# Read: workdir + exec paths
+allow svc_monster_zone_6_t usr_t:file { read getattr open };
+allow svc_monster_zone_6_t usr_t:dir { read search open };
+allow svc_monster_zone_6_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_monster_zone_6_t node_t:tcp_socket { create connect read write };
+allow svc_monster_zone_6_t node_t:udp_socket { create connect read write };
+allow svc_monster_zone_6_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_monster_zone_6_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_monster_zone_6_t usr_t:file { write append };
+
+# === monster_zone_7 ===
+type svc_monster_zone_7_t;
+
+# Read: workdir + exec paths
+allow svc_monster_zone_7_t usr_t:file { read getattr open };
+allow svc_monster_zone_7_t usr_t:dir { read search open };
+allow svc_monster_zone_7_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_monster_zone_7_t node_t:tcp_socket { create connect read write };
+allow svc_monster_zone_7_t node_t:udp_socket { create connect read write };
+allow svc_monster_zone_7_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_monster_zone_7_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_monster_zone_7_t usr_t:file { write append };
+
+# === monster_zone_8 ===
+type svc_monster_zone_8_t;
+
+# Read: workdir + exec paths
+allow svc_monster_zone_8_t usr_t:file { read getattr open };
+allow svc_monster_zone_8_t usr_t:dir { read search open };
+allow svc_monster_zone_8_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_monster_zone_8_t node_t:tcp_socket { create connect read write };
+allow svc_monster_zone_8_t node_t:udp_socket { create connect read write };
+allow svc_monster_zone_8_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_monster_zone_8_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_monster_zone_8_t usr_t:file { write append };
+
+# === monster_zone_9 ===
+type svc_monster_zone_9_t;
+
+# Read: workdir + exec paths
+allow svc_monster_zone_9_t usr_t:file { read getattr open };
+allow svc_monster_zone_9_t usr_t:dir { read search open };
+allow svc_monster_zone_9_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_monster_zone_9_t node_t:tcp_socket { create connect read write };
+allow svc_monster_zone_9_t node_t:udp_socket { create connect read write };
+allow svc_monster_zone_9_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_monster_zone_9_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_monster_zone_9_t usr_t:file { write append };
+
+# === fractranllama ===
+type svc_fractranllama_t;
+
+# Read: workdir + exec paths
+allow svc_fractranllama_t usr_t:file { read getattr open };
+allow svc_fractranllama_t usr_t:dir { read search open };
+allow svc_fractranllama_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_fractranllama_t node_t:tcp_socket { create connect read write };
+allow svc_fractranllama_t node_t:udp_socket { create connect read write };
+allow svc_fractranllama_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_fractranllama_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_fractranllama_t usr_t:file { write append };
+
+# === kagenti_portal ===
+type svc_kagenti_portal_t;
+
+# Read: workdir + exec paths
+allow svc_kagenti_portal_t usr_t:file { read getattr open };
+allow svc_kagenti_portal_t usr_t:dir { read search open };
+allow svc_kagenti_portal_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_kagenti_portal_t node_t:tcp_socket { create connect read write };
+allow svc_kagenti_portal_t node_t:udp_socket { create connect read write };
+allow svc_kagenti_portal_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_kagenti_portal_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_kagenti_portal_t usr_t:file { write append };
+
+# === kiro1_shard42 ===
+type svc_kiro1_shard42_t;
+
+# Read: workdir + exec paths
+allow svc_kiro1_shard42_t usr_t:file { read getattr open };
+allow svc_kiro1_shard42_t usr_t:dir { read search open };
+allow svc_kiro1_shard42_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_kiro1_shard42_t node_t:tcp_socket { create connect read write };
+allow svc_kiro1_shard42_t node_t:udp_socket { create connect read write };
+allow svc_kiro1_shard42_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_kiro1_shard42_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_kiro1_shard42_t usr_t:file { write append };
+
+# === kiro_feed_uucp ===
+type svc_kiro_feed_uucp_t;
+
+# Read: workdir + exec paths
+allow svc_kiro_feed_uucp_t usr_t:file { read getattr open };
+allow svc_kiro_feed_uucp_t usr_t:dir { read search open };
+allow svc_kiro_feed_uucp_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_kiro_feed_uucp_t node_t:tcp_socket { create connect read write };
+allow svc_kiro_feed_uucp_t node_t:udp_socket { create connect read write };
+allow svc_kiro_feed_uucp_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_kiro_feed_uucp_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_kiro_feed_uucp_t usr_t:file { write append };
+
+# === kiro_qms ===
+type svc_kiro_qms_t;
+
+# Read: workdir + exec paths
+allow svc_kiro_qms_t usr_t:file { read getattr open };
+allow svc_kiro_qms_t usr_t:dir { read search open };
+allow svc_kiro_qms_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_kiro_qms_t node_t:tcp_socket { create connect read write };
+allow svc_kiro_qms_t node_t:udp_socket { create connect read write };
+allow svc_kiro_qms_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_kiro_qms_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_kiro_qms_t usr_t:file { write append };
+
+# === kiro_session ===
+type svc_kiro_session_t;
+
+# Read: workdir + exec paths
+allow svc_kiro_session_t usr_t:file { read getattr open };
+allow svc_kiro_session_t usr_t:dir { read search open };
+allow svc_kiro_session_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_kiro_session_t node_t:tcp_socket { create connect read write };
+allow svc_kiro_session_t node_t:udp_socket { create connect read write };
+allow svc_kiro_session_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_kiro_session_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_kiro_session_t usr_t:file { write append };
+
+# === moltis ===
+type svc_moltis_t;
+
+# Read: workdir + exec paths
+allow svc_moltis_t usr_t:file { read getattr open };
+allow svc_moltis_t usr_t:dir { read search open };
+allow svc_moltis_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_moltis_t node_t:tcp_socket { create connect read write };
+allow svc_moltis_t node_t:udp_socket { create connect read write };
+allow svc_moltis_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_moltis_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_moltis_t usr_t:file { write append };
+
+# === nixwars_frens ===
+type svc_nixwars_frens_t;
+
+# Read: workdir + exec paths
+allow svc_nixwars_frens_t usr_t:file { read getattr open };
+allow svc_nixwars_frens_t usr_t:dir { read search open };
+allow svc_nixwars_frens_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_nixwars_frens_t node_t:tcp_socket { create connect read write };
+allow svc_nixwars_frens_t node_t:udp_socket { create connect read write };
+allow svc_nixwars_frens_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_nixwars_frens_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_nixwars_frens_t usr_t:file { write append };
+
+# === openclaw ===
+type svc_openclaw_t;
+
+# Read: workdir + exec paths
+allow svc_openclaw_t usr_t:file { read getattr open };
+allow svc_openclaw_t usr_t:dir { read search open };
+allow svc_openclaw_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_openclaw_t node_t:tcp_socket { create connect read write };
+allow svc_openclaw_t node_t:udp_socket { create connect read write };
+allow svc_openclaw_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_openclaw_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_openclaw_t usr_t:file { write append };
+
+# === pastebin ===
+type svc_pastebin_t;
+
+# Read: workdir + exec paths
+allow svc_pastebin_t usr_t:file { read getattr open };
+allow svc_pastebin_t usr_t:dir { read search open };
+allow svc_pastebin_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_pastebin_t node_t:tcp_socket { create connect read write };
+allow svc_pastebin_t node_t:udp_socket { create connect read write };
+allow svc_pastebin_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_pastebin_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_pastebin_t usr_t:file { write append };
+
+# === rust_mcp_services ===
+type svc_rust_mcp_services_t;
+
+# Read: workdir + exec paths
+allow svc_rust_mcp_services_t usr_t:file { read getattr open };
+allow svc_rust_mcp_services_t usr_t:dir { read search open };
+allow svc_rust_mcp_services_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_rust_mcp_services_t node_t:tcp_socket { create connect read write };
+allow svc_rust_mcp_services_t node_t:udp_socket { create connect read write };
+allow svc_rust_mcp_services_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_rust_mcp_services_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_rust_mcp_services_t usr_t:file { write append };
+
+# === solfunmeme_service ===
+type svc_solfunmeme_service_t;
+
+# Read: workdir + exec paths
+allow svc_solfunmeme_service_t usr_t:file { read getattr open };
+allow svc_solfunmeme_service_t usr_t:dir { read search open };
+allow svc_solfunmeme_service_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_solfunmeme_service_t node_t:tcp_socket { create connect read write };
+allow svc_solfunmeme_service_t node_t:udp_socket { create connect read write };
+allow svc_solfunmeme_service_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_solfunmeme_service_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_solfunmeme_service_t usr_t:file { write append };
+
+# === wg_stego_tunnel ===
+type svc_wg_stego_tunnel_t;
+
+# Read: workdir + exec paths
+allow svc_wg_stego_tunnel_t usr_t:file { read getattr open };
+allow svc_wg_stego_tunnel_t usr_t:dir { read search open };
+allow svc_wg_stego_tunnel_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_wg_stego_tunnel_t node_t:tcp_socket { create connect read write };
+allow svc_wg_stego_tunnel_t node_t:udp_socket { create connect read write };
+allow svc_wg_stego_tunnel_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_wg_stego_tunnel_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_wg_stego_tunnel_t usr_t:file { write append };
+
+# === zos_server ===
+type svc_zos_server_t;
+
+# Read: workdir + exec paths
+allow svc_zos_server_t usr_t:file { read getattr open };
+allow svc_zos_server_t usr_t:dir { read search open };
+allow svc_zos_server_t bin_t:file { read getattr open execute };
+# Network access
+allow svc_zos_server_t node_t:tcp_socket { create connect read write };
+allow svc_zos_server_t node_t:udp_socket { create connect read write };
+allow svc_zos_server_t tmp_t:file { read write create };
+# NoNewPrivileges enforced
+neverallow svc_zos_server_t self:process { setuid setgid };
+# ProtectSystem=strict
+neverallow svc_zos_server_t usr_t:file { write append };
+
+# === Inter-service information flow ===

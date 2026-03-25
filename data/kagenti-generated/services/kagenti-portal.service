@@ -1,0 +1,35 @@
+[Unit]
+Description=Dynamic node onboarding + WG keygen
+After=network.target
+
+[Service]
+Type=simple
+User=kagenti
+Group=kagenti
+SELinuxContext=system_u:system_r:svc_kagenti_portal_t:s0
+
+ExecStart=/opt/kagenti/bin/kagenti-portal
+Restart=always
+RestartSec=10
+Environment="PORT=8201"
+Environment="MONSTER_SHARD=1"
+Environment="IPV6_ADDR=fd00::71:1:0"
+
+# Security (monster-zone gold standard)
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+
+# Network isolation
+IPAddressAllow=10.71.0.0/16
+IPAddressAllow=fd00::71:0:0/48
+IPAddressAllow=127.0.0.0/8
+IPAddressAllow=::1/128
+
+# Resource limits
+MemoryMax=2G
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,35 @@
+[Unit]
+Description=Open claw machine game
+After=network.target
+
+[Service]
+Type=simple
+User=mdupont
+Group=mdupont
+SELinuxContext=system_u:system_r:svc_openclaw_t:s0
+
+ExecStart=/opt/openclaw/bin/openclaw-server
+Restart=always
+RestartSec=10
+Environment="PORT=8140"
+Environment="MONSTER_SHARD=61"
+Environment="IPV6_ADDR=fd00::71:61:0"
+
+# Security (monster-zone gold standard)
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+
+# Network isolation
+IPAddressAllow=10.71.0.0/16
+IPAddressAllow=fd00::71:0:0/48
+IPAddressAllow=127.0.0.0/8
+IPAddressAllow=::1/128
+
+# Resource limits
+MemoryMax=2G
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

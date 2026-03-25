@@ -1,0 +1,558 @@
+[
+  {
+    "service": "zone42_understanding",
+    "user": "root",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/mnt/data1/zones/42",
+      "/usr/bin"
+    ],
+    "no_new_privs": false,
+    "protect_system": "",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "fractran_meta_compiler",
+    "user": "mdupont",
+    "network": true,
+    "write_paths": [
+      "/home/mdupont/projects/cicadia71/shards/fractran_meta_compiler",
+      "/home/mdupont/uucp/spool"
+    ],
+    "read_paths": [
+      "/home/mdupont/projects/cicadia71/shards/fractran_meta_compiler",
+      "/home/mdupont/uucp/spool",
+      "/usr/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target",
+      "emacs.service"
+    ]
+  },
+  {
+    "service": "uucp_solana_gateway",
+    "user": "uucp",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/home/mdupont/projects/cicadia71/shards/shard0/nix-wars/solana"
+    ],
+    "no_new_privs": false,
+    "protect_system": "",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "harbor_shard58",
+    "user": "root",
+    "network": true,
+    "write_paths": [
+      "/tmp",
+      "/home/mdupont/introspector/shard58/harbor"
+    ],
+    "read_paths": [
+      "/tmp",
+      "/home/mdupont/introspector/shard58/harbor",
+      "/usr/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "zkperf_da51",
+    "user": "mdupont",
+    "network": true,
+    "write_paths": [
+      "/var/lib/zkperf"
+    ],
+    "read_paths": [
+      "/var/lib/zkperf",
+      "/opt/zkperf/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target",
+      "rabbitmq-server.service",
+      "rabbitmq-server.service"
+    ]
+  },
+  {
+    "service": "snm_paste_server",
+    "user": "mdupont",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/home/mdupont/2026/03-march/07/monster-ngram-learning",
+      "/usr/bin"
+    ],
+    "no_new_privs": false,
+    "protect_system": "",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "activity_profile",
+    "user": "mdupont",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/nix/store/REPLACE/bin",
+      "/home/mdupont"
+    ],
+    "no_new_privs": false,
+    "protect_system": "",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "eco_research",
+    "user": "mdupont",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/nix/store/HASH-eco-research-server/bin",
+      "/home/mdupont/spool"
+    ],
+    "no_new_privs": false,
+    "protect_system": "",
+    "dependencies": [
+      "network.target",
+      "spool-gui.service"
+    ]
+  },
+  {
+    "service": "agent_docker",
+    "user": "root",
+    "network": false,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/bin"
+    ],
+    "no_new_privs": false,
+    "protect_system": "",
+    "dependencies": [
+      "docker.service"
+    ]
+  },
+  {
+    "service": "rust_compiler",
+    "user": "root",
+    "network": false,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/bin"
+    ],
+    "no_new_privs": false,
+    "protect_system": "",
+    "dependencies": [
+      "docker.service"
+    ]
+  },
+  {
+    "service": "solana",
+    "user": "solana",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/opt/solana/solana-release/bin"
+    ],
+    "no_new_privs": false,
+    "protect_system": "",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "unified_p2p_server",
+    "user": "p2p-rust",
+    "network": true,
+    "write_paths": [
+      "/opt/unified-p2p-server"
+    ],
+    "read_paths": [
+      "/opt/unified-p2p-server"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target",
+      "network.target"
+    ]
+  },
+  {
+    "service": "monster_zone_0",
+    "user": "monster_zone_0",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/local/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "monster_zone_1",
+    "user": "monster_zone_1",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/local/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "monster_zone_2",
+    "user": "monster_zone_2",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/local/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "monster_zone_3",
+    "user": "monster_zone_3",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/local/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "monster_zone_4",
+    "user": "monster_zone_4",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/local/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "monster_zone_5",
+    "user": "monster_zone_5",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/local/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "monster_zone_6",
+    "user": "monster_zone_6",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/local/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "monster_zone_7",
+    "user": "monster_zone_7",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/local/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "monster_zone_8",
+    "user": "monster_zone_8",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/local/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "monster_zone_9",
+    "user": "monster_zone_9",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/usr/local/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "fractranllama",
+    "user": "mdupont",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/opt/fractranllama/bin",
+      "/"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "kagenti_portal",
+    "user": "kagenti",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/opt/kagenti/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "kiro1_shard42",
+    "user": "kiro1",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/mnt/data1/shards/42/home/kiro-1/bin",
+      "/"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "kiro_feed_uucp",
+    "user": "kiro",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/mnt/data1/kiro/bin",
+      "/"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "kiro_qms",
+    "user": "kiro",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/mnt/data1/zones/42/uucp/kiro-qms/bin",
+      "/"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "kiro_session",
+    "user": "kiro",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/mnt/data1/kiro/bin",
+      "/"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "moltis",
+    "user": "moltis",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/opt/moltis/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "nixwars_frens",
+    "user": "mdupont",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/opt/nixwars/bin",
+      "/"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "openclaw",
+    "user": "mdupont",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/opt/openclaw/bin",
+      "/"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "pastebin",
+    "user": "mdupont",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/opt/pastebin/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "rust_mcp_services",
+    "user": "mdupont",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/opt/mcp/bin",
+      "/"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "solfunmeme_service",
+    "user": "mdupont",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/opt/solfunmeme/bin",
+      "/"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "wg_stego_tunnel",
+    "user": "wgtunnel",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/opt/wg-stego/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  },
+  {
+    "service": "zos_server",
+    "user": "zos",
+    "network": true,
+    "write_paths": [],
+    "read_paths": [
+      "/",
+      "/opt/zos/bin"
+    ],
+    "no_new_privs": true,
+    "protect_system": "strict",
+    "dependencies": [
+      "network.target"
+    ]
+  }
+]

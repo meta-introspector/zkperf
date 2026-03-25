@@ -1,0 +1,21 @@
+[Unit]
+Description=Activity Profile - User timeline service
+After=network.target
+
+[Service]
+Type=simple
+User=mdupont
+WorkingDirectory=/home/mdupont
+ExecStart=/nix/store/REPLACE/bin/activity-profile-server
+Restart=always
+Environment="PROFILE_PORT=8093"
+
+
+# === zkperf hardening (auto-generated) ===
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

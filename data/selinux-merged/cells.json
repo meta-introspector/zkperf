@@ -1,0 +1,2072 @@
+[
+  {
+    "shard": 63,
+    "sector": 0,
+    "zone": 10,
+    "cell": 174709,
+    "service": "zone42_understanding",
+    "perm": "read",
+    "resource": "/mnt/data1/zones/42",
+    "source": "static"
+  },
+  {
+    "shard": 63,
+    "sector": 0,
+    "zone": 0,
+    "cell": 174699,
+    "service": "zone42_understanding",
+    "perm": "read",
+    "resource": "/usr/bin",
+    "source": "static"
+  },
+  {
+    "shard": 63,
+    "sector": 8,
+    "zone": 12,
+    "cell": 175087,
+    "service": "zone42_understanding",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 63,
+    "sector": 0,
+    "zone": 12,
+    "cell": 174711,
+    "service": "zone42_understanding",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 63,
+    "sector": 1,
+    "zone": 12,
+    "cell": 174758,
+    "service": "zone42_understanding",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 0,
+    "zone": 5,
+    "cell": 160839,
+    "service": "fractran_meta_compiler",
+    "perm": "read",
+    "resource": "/home/mdupont/projects/cicadia71/shards/fractran_meta_compiler",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 0,
+    "zone": 0,
+    "cell": 160834,
+    "service": "fractran_meta_compiler",
+    "perm": "read",
+    "resource": "/usr/bin",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 1,
+    "zone": 5,
+    "cell": 160886,
+    "service": "fractran_meta_compiler",
+    "perm": "write",
+    "resource": "/home/mdupont/projects/cicadia71/shards/fractran_meta_compiler",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 8,
+    "zone": 12,
+    "cell": 161222,
+    "service": "fractran_meta_compiler",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 0,
+    "zone": 12,
+    "cell": 160846,
+    "service": "fractran_meta_compiler",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 1,
+    "zone": 12,
+    "cell": 160893,
+    "service": "fractran_meta_compiler",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 14,
+    "zone": 7,
+    "cell": 161499,
+    "service": "fractran_meta_compiler",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 36,
+    "sector": 0,
+    "zone": 4,
+    "cell": 99832,
+    "service": "uucp_solana_gateway",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 36,
+    "sector": 0,
+    "zone": 5,
+    "cell": 99833,
+    "service": "uucp_solana_gateway",
+    "perm": "read",
+    "resource": "/home/mdupont/projects/cicadia71/shards/shard0/nix-wars/solana",
+    "source": "static"
+  },
+  {
+    "shard": 36,
+    "sector": 8,
+    "zone": 12,
+    "cell": 100216,
+    "service": "uucp_solana_gateway",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 36,
+    "sector": 0,
+    "zone": 12,
+    "cell": 99840,
+    "service": "uucp_solana_gateway",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 36,
+    "sector": 1,
+    "zone": 12,
+    "cell": 99887,
+    "service": "uucp_solana_gateway",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 2,
+    "sector": 0,
+    "zone": 4,
+    "cell": 5550,
+    "service": "harbor_shard58",
+    "perm": "read",
+    "resource": "/tmp",
+    "source": "static"
+  },
+  {
+    "shard": 2,
+    "sector": 0,
+    "zone": 5,
+    "cell": 5551,
+    "service": "harbor_shard58",
+    "perm": "read",
+    "resource": "/home/mdupont/introspector/shard58/harbor",
+    "source": "static"
+  },
+  {
+    "shard": 2,
+    "sector": 0,
+    "zone": 0,
+    "cell": 5546,
+    "service": "harbor_shard58",
+    "perm": "read",
+    "resource": "/usr/bin",
+    "source": "static"
+  },
+  {
+    "shard": 2,
+    "sector": 1,
+    "zone": 4,
+    "cell": 5597,
+    "service": "harbor_shard58",
+    "perm": "write",
+    "resource": "/tmp",
+    "source": "static"
+  },
+  {
+    "shard": 2,
+    "sector": 1,
+    "zone": 5,
+    "cell": 5598,
+    "service": "harbor_shard58",
+    "perm": "write",
+    "resource": "/home/mdupont/introspector/shard58/harbor",
+    "source": "static"
+  },
+  {
+    "shard": 2,
+    "sector": 8,
+    "zone": 12,
+    "cell": 5934,
+    "service": "harbor_shard58",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 2,
+    "sector": 0,
+    "zone": 12,
+    "cell": 5558,
+    "service": "harbor_shard58",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 2,
+    "sector": 1,
+    "zone": 12,
+    "cell": 5605,
+    "service": "harbor_shard58",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 2,
+    "sector": 14,
+    "zone": 7,
+    "cell": 6211,
+    "service": "harbor_shard58",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 0,
+    "zone": 3,
+    "cell": 72101,
+    "service": "zkperf_da51",
+    "perm": "read",
+    "resource": "/var/lib/zkperf",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 0,
+    "zone": 1,
+    "cell": 72099,
+    "service": "zkperf_da51",
+    "perm": "read",
+    "resource": "/opt/zkperf/bin",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 1,
+    "zone": 3,
+    "cell": 72148,
+    "service": "zkperf_da51",
+    "perm": "write",
+    "resource": "/var/lib/zkperf",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 8,
+    "zone": 12,
+    "cell": 72486,
+    "service": "zkperf_da51",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 0,
+    "zone": 12,
+    "cell": 72110,
+    "service": "zkperf_da51",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 1,
+    "zone": 12,
+    "cell": 72157,
+    "service": "zkperf_da51",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 14,
+    "zone": 7,
+    "cell": 72763,
+    "service": "zkperf_da51",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 34,
+    "sector": 0,
+    "zone": 5,
+    "cell": 94287,
+    "service": "snm_paste_server",
+    "perm": "read",
+    "resource": "/home/mdupont/2026/03-march/07/monster-ngram-learning",
+    "source": "static"
+  },
+  {
+    "shard": 34,
+    "sector": 0,
+    "zone": 0,
+    "cell": 94282,
+    "service": "snm_paste_server",
+    "perm": "read",
+    "resource": "/usr/bin",
+    "source": "static"
+  },
+  {
+    "shard": 34,
+    "sector": 8,
+    "zone": 12,
+    "cell": 94670,
+    "service": "snm_paste_server",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 34,
+    "sector": 0,
+    "zone": 12,
+    "cell": 94294,
+    "service": "snm_paste_server",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 34,
+    "sector": 1,
+    "zone": 12,
+    "cell": 94341,
+    "service": "snm_paste_server",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 31,
+    "sector": 0,
+    "zone": 1,
+    "cell": 85964,
+    "service": "activity_profile",
+    "perm": "read",
+    "resource": "/nix/store/REPLACE/bin",
+    "source": "static"
+  },
+  {
+    "shard": 31,
+    "sector": 0,
+    "zone": 5,
+    "cell": 85968,
+    "service": "activity_profile",
+    "perm": "read",
+    "resource": "/home/mdupont",
+    "source": "static"
+  },
+  {
+    "shard": 31,
+    "sector": 8,
+    "zone": 12,
+    "cell": 86351,
+    "service": "activity_profile",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 31,
+    "sector": 0,
+    "zone": 12,
+    "cell": 85975,
+    "service": "activity_profile",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 31,
+    "sector": 1,
+    "zone": 12,
+    "cell": 86022,
+    "service": "activity_profile",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 37,
+    "sector": 0,
+    "zone": 1,
+    "cell": 102602,
+    "service": "eco_research",
+    "perm": "read",
+    "resource": "/nix/store/HASH-eco-research-server/bin",
+    "source": "static"
+  },
+  {
+    "shard": 37,
+    "sector": 0,
+    "zone": 5,
+    "cell": 102606,
+    "service": "eco_research",
+    "perm": "read",
+    "resource": "/home/mdupont/spool",
+    "source": "static"
+  },
+  {
+    "shard": 37,
+    "sector": 8,
+    "zone": 12,
+    "cell": 102989,
+    "service": "eco_research",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 37,
+    "sector": 0,
+    "zone": 12,
+    "cell": 102613,
+    "service": "eco_research",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 37,
+    "sector": 1,
+    "zone": 12,
+    "cell": 102660,
+    "service": "eco_research",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 27,
+    "sector": 0,
+    "zone": 4,
+    "cell": 74875,
+    "service": "agent_docker",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 27,
+    "sector": 0,
+    "zone": 0,
+    "cell": 74871,
+    "service": "agent_docker",
+    "perm": "read",
+    "resource": "/usr/bin",
+    "source": "static"
+  },
+  {
+    "shard": 15,
+    "sector": 0,
+    "zone": 4,
+    "cell": 41599,
+    "service": "rust_compiler",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 15,
+    "sector": 0,
+    "zone": 0,
+    "cell": 41595,
+    "service": "rust_compiler",
+    "perm": "read",
+    "resource": "/usr/bin",
+    "source": "static"
+  },
+  {
+    "shard": 51,
+    "sector": 0,
+    "zone": 4,
+    "cell": 141427,
+    "service": "solana",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 51,
+    "sector": 0,
+    "zone": 1,
+    "cell": 141424,
+    "service": "solana",
+    "perm": "read",
+    "resource": "/opt/solana/solana-release/bin",
+    "source": "static"
+  },
+  {
+    "shard": 51,
+    "sector": 8,
+    "zone": 12,
+    "cell": 141811,
+    "service": "solana",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 51,
+    "sector": 0,
+    "zone": 12,
+    "cell": 141435,
+    "service": "solana",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 51,
+    "sector": 1,
+    "zone": 12,
+    "cell": 141482,
+    "service": "solana",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 17,
+    "sector": 0,
+    "zone": 11,
+    "cell": 47152,
+    "service": "unified_p2p_server",
+    "perm": "read",
+    "resource": "/opt/unified-p2p-server",
+    "source": "static"
+  },
+  {
+    "shard": 17,
+    "sector": 1,
+    "zone": 11,
+    "cell": 47199,
+    "service": "unified_p2p_server",
+    "perm": "write",
+    "resource": "/opt/unified-p2p-server",
+    "source": "static"
+  },
+  {
+    "shard": 17,
+    "sector": 8,
+    "zone": 12,
+    "cell": 47529,
+    "service": "unified_p2p_server",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 17,
+    "sector": 0,
+    "zone": 12,
+    "cell": 47153,
+    "service": "unified_p2p_server",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 17,
+    "sector": 1,
+    "zone": 12,
+    "cell": 47200,
+    "service": "unified_p2p_server",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 17,
+    "sector": 14,
+    "zone": 7,
+    "cell": 47806,
+    "service": "unified_p2p_server",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 0,
+    "zone": 4,
+    "cell": 160838,
+    "service": "monster_zone_0",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 0,
+    "zone": 0,
+    "cell": 160834,
+    "service": "monster_zone_0",
+    "perm": "read",
+    "resource": "/usr/local/bin",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 8,
+    "zone": 12,
+    "cell": 161222,
+    "service": "monster_zone_0",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 0,
+    "zone": 12,
+    "cell": 160846,
+    "service": "monster_zone_0",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 1,
+    "zone": 12,
+    "cell": 160893,
+    "service": "monster_zone_0",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 14,
+    "zone": 7,
+    "cell": 161499,
+    "service": "monster_zone_0",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 0,
+    "zone": 4,
+    "cell": 72102,
+    "service": "monster_zone_1",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 0,
+    "zone": 0,
+    "cell": 72098,
+    "service": "monster_zone_1",
+    "perm": "read",
+    "resource": "/usr/local/bin",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 8,
+    "zone": 12,
+    "cell": 72486,
+    "service": "monster_zone_1",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 0,
+    "zone": 12,
+    "cell": 72110,
+    "service": "monster_zone_1",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 1,
+    "zone": 12,
+    "cell": 72157,
+    "service": "monster_zone_1",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 26,
+    "sector": 14,
+    "zone": 7,
+    "cell": 72763,
+    "service": "monster_zone_1",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 44,
+    "sector": 0,
+    "zone": 4,
+    "cell": 122016,
+    "service": "monster_zone_2",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 44,
+    "sector": 0,
+    "zone": 0,
+    "cell": 122012,
+    "service": "monster_zone_2",
+    "perm": "read",
+    "resource": "/usr/local/bin",
+    "source": "static"
+  },
+  {
+    "shard": 44,
+    "sector": 8,
+    "zone": 12,
+    "cell": 122400,
+    "service": "monster_zone_2",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 44,
+    "sector": 0,
+    "zone": 12,
+    "cell": 122024,
+    "service": "monster_zone_2",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 44,
+    "sector": 1,
+    "zone": 12,
+    "cell": 122071,
+    "service": "monster_zone_2",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 44,
+    "sector": 14,
+    "zone": 7,
+    "cell": 122677,
+    "service": "monster_zone_2",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 37,
+    "sector": 0,
+    "zone": 4,
+    "cell": 102605,
+    "service": "monster_zone_3",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 37,
+    "sector": 0,
+    "zone": 0,
+    "cell": 102601,
+    "service": "monster_zone_3",
+    "perm": "read",
+    "resource": "/usr/local/bin",
+    "source": "static"
+  },
+  {
+    "shard": 37,
+    "sector": 8,
+    "zone": 12,
+    "cell": 102989,
+    "service": "monster_zone_3",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 37,
+    "sector": 0,
+    "zone": 12,
+    "cell": 102613,
+    "service": "monster_zone_3",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 37,
+    "sector": 1,
+    "zone": 12,
+    "cell": 102660,
+    "service": "monster_zone_3",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 37,
+    "sector": 14,
+    "zone": 7,
+    "cell": 103266,
+    "service": "monster_zone_3",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 0,
+    "zone": 4,
+    "cell": 97059,
+    "service": "monster_zone_4",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 0,
+    "zone": 0,
+    "cell": 97055,
+    "service": "monster_zone_4",
+    "perm": "read",
+    "resource": "/usr/local/bin",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 8,
+    "zone": 12,
+    "cell": 97443,
+    "service": "monster_zone_4",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 0,
+    "zone": 12,
+    "cell": 97067,
+    "service": "monster_zone_4",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 1,
+    "zone": 12,
+    "cell": 97114,
+    "service": "monster_zone_4",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 14,
+    "zone": 7,
+    "cell": 97720,
+    "service": "monster_zone_4",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 69,
+    "sector": 0,
+    "zone": 4,
+    "cell": 191341,
+    "service": "monster_zone_5",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 69,
+    "sector": 0,
+    "zone": 0,
+    "cell": 191337,
+    "service": "monster_zone_5",
+    "perm": "read",
+    "resource": "/usr/local/bin",
+    "source": "static"
+  },
+  {
+    "shard": 69,
+    "sector": 8,
+    "zone": 12,
+    "cell": 191725,
+    "service": "monster_zone_5",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 69,
+    "sector": 0,
+    "zone": 12,
+    "cell": 191349,
+    "service": "monster_zone_5",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 69,
+    "sector": 1,
+    "zone": 12,
+    "cell": 191396,
+    "service": "monster_zone_5",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 69,
+    "sector": 14,
+    "zone": 7,
+    "cell": 192002,
+    "service": "monster_zone_5",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 0,
+    "zone": 4,
+    "cell": 97059,
+    "service": "monster_zone_6",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 0,
+    "zone": 0,
+    "cell": 97055,
+    "service": "monster_zone_6",
+    "perm": "read",
+    "resource": "/usr/local/bin",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 8,
+    "zone": 12,
+    "cell": 97443,
+    "service": "monster_zone_6",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 0,
+    "zone": 12,
+    "cell": 97067,
+    "service": "monster_zone_6",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 1,
+    "zone": 12,
+    "cell": 97114,
+    "service": "monster_zone_6",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 35,
+    "sector": 14,
+    "zone": 7,
+    "cell": 97720,
+    "service": "monster_zone_6",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 41,
+    "sector": 0,
+    "zone": 4,
+    "cell": 113697,
+    "service": "monster_zone_7",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 41,
+    "sector": 0,
+    "zone": 0,
+    "cell": 113693,
+    "service": "monster_zone_7",
+    "perm": "read",
+    "resource": "/usr/local/bin",
+    "source": "static"
+  },
+  {
+    "shard": 41,
+    "sector": 8,
+    "zone": 12,
+    "cell": 114081,
+    "service": "monster_zone_7",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 41,
+    "sector": 0,
+    "zone": 12,
+    "cell": 113705,
+    "service": "monster_zone_7",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 41,
+    "sector": 1,
+    "zone": 12,
+    "cell": 113752,
+    "service": "monster_zone_7",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 41,
+    "sector": 14,
+    "zone": 7,
+    "cell": 114358,
+    "service": "monster_zone_7",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 22,
+    "sector": 0,
+    "zone": 4,
+    "cell": 61010,
+    "service": "monster_zone_8",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 22,
+    "sector": 0,
+    "zone": 0,
+    "cell": 61006,
+    "service": "monster_zone_8",
+    "perm": "read",
+    "resource": "/usr/local/bin",
+    "source": "static"
+  },
+  {
+    "shard": 22,
+    "sector": 8,
+    "zone": 12,
+    "cell": 61394,
+    "service": "monster_zone_8",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 22,
+    "sector": 0,
+    "zone": 12,
+    "cell": 61018,
+    "service": "monster_zone_8",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 22,
+    "sector": 1,
+    "zone": 12,
+    "cell": 61065,
+    "service": "monster_zone_8",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 22,
+    "sector": 14,
+    "zone": 7,
+    "cell": 61671,
+    "service": "monster_zone_8",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 0,
+    "zone": 4,
+    "cell": 13869,
+    "service": "monster_zone_9",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 0,
+    "zone": 0,
+    "cell": 13865,
+    "service": "monster_zone_9",
+    "perm": "read",
+    "resource": "/usr/local/bin",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 8,
+    "zone": 12,
+    "cell": 14253,
+    "service": "monster_zone_9",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 0,
+    "zone": 12,
+    "cell": 13877,
+    "service": "monster_zone_9",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 1,
+    "zone": 12,
+    "cell": 13924,
+    "service": "monster_zone_9",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 14,
+    "zone": 7,
+    "cell": 14530,
+    "service": "monster_zone_9",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 50,
+    "sector": 0,
+    "zone": 1,
+    "cell": 138651,
+    "service": "fractranllama",
+    "perm": "read",
+    "resource": "/opt/fractranllama/bin",
+    "source": "static"
+  },
+  {
+    "shard": 50,
+    "sector": 0,
+    "zone": 4,
+    "cell": 138654,
+    "service": "fractranllama",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 50,
+    "sector": 8,
+    "zone": 12,
+    "cell": 139038,
+    "service": "fractranllama",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 50,
+    "sector": 0,
+    "zone": 12,
+    "cell": 138662,
+    "service": "fractranllama",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 50,
+    "sector": 1,
+    "zone": 12,
+    "cell": 138709,
+    "service": "fractranllama",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 50,
+    "sector": 14,
+    "zone": 7,
+    "cell": 139315,
+    "service": "fractranllama",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 59,
+    "sector": 0,
+    "zone": 4,
+    "cell": 163611,
+    "service": "kagenti_portal",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 59,
+    "sector": 0,
+    "zone": 1,
+    "cell": 163608,
+    "service": "kagenti_portal",
+    "perm": "read",
+    "resource": "/opt/kagenti/bin",
+    "source": "static"
+  },
+  {
+    "shard": 59,
+    "sector": 8,
+    "zone": 12,
+    "cell": 163995,
+    "service": "kagenti_portal",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 59,
+    "sector": 0,
+    "zone": 12,
+    "cell": 163619,
+    "service": "kagenti_portal",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 59,
+    "sector": 1,
+    "zone": 12,
+    "cell": 163666,
+    "service": "kagenti_portal",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 59,
+    "sector": 14,
+    "zone": 7,
+    "cell": 164272,
+    "service": "kagenti_portal",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 31,
+    "sector": 0,
+    "zone": 1,
+    "cell": 85964,
+    "service": "kiro1_shard42",
+    "perm": "read",
+    "resource": "/mnt/data1/shards/42/home/kiro-1/bin",
+    "source": "static"
+  },
+  {
+    "shard": 31,
+    "sector": 0,
+    "zone": 4,
+    "cell": 85967,
+    "service": "kiro1_shard42",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 31,
+    "sector": 8,
+    "zone": 12,
+    "cell": 86351,
+    "service": "kiro1_shard42",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 31,
+    "sector": 0,
+    "zone": 12,
+    "cell": 85975,
+    "service": "kiro1_shard42",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 31,
+    "sector": 1,
+    "zone": 12,
+    "cell": 86022,
+    "service": "kiro1_shard42",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 31,
+    "sector": 14,
+    "zone": 7,
+    "cell": 86628,
+    "service": "kiro1_shard42",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 66,
+    "sector": 0,
+    "zone": 1,
+    "cell": 183019,
+    "service": "kiro_feed_uucp",
+    "perm": "read",
+    "resource": "/mnt/data1/kiro/bin",
+    "source": "static"
+  },
+  {
+    "shard": 66,
+    "sector": 0,
+    "zone": 4,
+    "cell": 183022,
+    "service": "kiro_feed_uucp",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 66,
+    "sector": 8,
+    "zone": 12,
+    "cell": 183406,
+    "service": "kiro_feed_uucp",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 66,
+    "sector": 0,
+    "zone": 12,
+    "cell": 183030,
+    "service": "kiro_feed_uucp",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 66,
+    "sector": 1,
+    "zone": 12,
+    "cell": 183077,
+    "service": "kiro_feed_uucp",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 66,
+    "sector": 14,
+    "zone": 7,
+    "cell": 183683,
+    "service": "kiro_feed_uucp",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 0,
+    "zone": 1,
+    "cell": 169154,
+    "service": "kiro_qms",
+    "perm": "read",
+    "resource": "/mnt/data1/zones/42/uucp/kiro-qms/bin",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 0,
+    "zone": 4,
+    "cell": 169157,
+    "service": "kiro_qms",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 8,
+    "zone": 12,
+    "cell": 169541,
+    "service": "kiro_qms",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 0,
+    "zone": 12,
+    "cell": 169165,
+    "service": "kiro_qms",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 1,
+    "zone": 12,
+    "cell": 169212,
+    "service": "kiro_qms",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 14,
+    "zone": 7,
+    "cell": 169818,
+    "service": "kiro_qms",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 15,
+    "sector": 0,
+    "zone": 1,
+    "cell": 41596,
+    "service": "kiro_session",
+    "perm": "read",
+    "resource": "/mnt/data1/kiro/bin",
+    "source": "static"
+  },
+  {
+    "shard": 15,
+    "sector": 0,
+    "zone": 4,
+    "cell": 41599,
+    "service": "kiro_session",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 15,
+    "sector": 8,
+    "zone": 12,
+    "cell": 41983,
+    "service": "kiro_session",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 15,
+    "sector": 0,
+    "zone": 12,
+    "cell": 41607,
+    "service": "kiro_session",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 15,
+    "sector": 1,
+    "zone": 12,
+    "cell": 41654,
+    "service": "kiro_session",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 15,
+    "sector": 14,
+    "zone": 7,
+    "cell": 42260,
+    "service": "kiro_session",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 65,
+    "sector": 0,
+    "zone": 4,
+    "cell": 180249,
+    "service": "moltis",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 65,
+    "sector": 0,
+    "zone": 1,
+    "cell": 180246,
+    "service": "moltis",
+    "perm": "read",
+    "resource": "/opt/moltis/bin",
+    "source": "static"
+  },
+  {
+    "shard": 65,
+    "sector": 8,
+    "zone": 12,
+    "cell": 180633,
+    "service": "moltis",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 65,
+    "sector": 0,
+    "zone": 12,
+    "cell": 180257,
+    "service": "moltis",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 65,
+    "sector": 1,
+    "zone": 12,
+    "cell": 180304,
+    "service": "moltis",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 65,
+    "sector": 14,
+    "zone": 7,
+    "cell": 180910,
+    "service": "moltis",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 25,
+    "sector": 0,
+    "zone": 1,
+    "cell": 69326,
+    "service": "nixwars_frens",
+    "perm": "read",
+    "resource": "/opt/nixwars/bin",
+    "source": "static"
+  },
+  {
+    "shard": 25,
+    "sector": 0,
+    "zone": 4,
+    "cell": 69329,
+    "service": "nixwars_frens",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 25,
+    "sector": 8,
+    "zone": 12,
+    "cell": 69713,
+    "service": "nixwars_frens",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 25,
+    "sector": 0,
+    "zone": 12,
+    "cell": 69337,
+    "service": "nixwars_frens",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 25,
+    "sector": 1,
+    "zone": 12,
+    "cell": 69384,
+    "service": "nixwars_frens",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 25,
+    "sector": 14,
+    "zone": 7,
+    "cell": 69990,
+    "service": "nixwars_frens",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 0,
+    "zone": 1,
+    "cell": 169154,
+    "service": "openclaw",
+    "perm": "read",
+    "resource": "/opt/openclaw/bin",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 0,
+    "zone": 4,
+    "cell": 169157,
+    "service": "openclaw",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 8,
+    "zone": 12,
+    "cell": 169541,
+    "service": "openclaw",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 0,
+    "zone": 12,
+    "cell": 169165,
+    "service": "openclaw",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 1,
+    "zone": 12,
+    "cell": 169212,
+    "service": "openclaw",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 61,
+    "sector": 14,
+    "zone": 7,
+    "cell": 169818,
+    "service": "openclaw",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 38,
+    "sector": 0,
+    "zone": 4,
+    "cell": 105378,
+    "service": "pastebin",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 38,
+    "sector": 0,
+    "zone": 1,
+    "cell": 105375,
+    "service": "pastebin",
+    "perm": "read",
+    "resource": "/opt/pastebin/bin",
+    "source": "static"
+  },
+  {
+    "shard": 38,
+    "sector": 8,
+    "zone": 12,
+    "cell": 105762,
+    "service": "pastebin",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 38,
+    "sector": 0,
+    "zone": 12,
+    "cell": 105386,
+    "service": "pastebin",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 38,
+    "sector": 1,
+    "zone": 12,
+    "cell": 105433,
+    "service": "pastebin",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 38,
+    "sector": 14,
+    "zone": 7,
+    "cell": 106039,
+    "service": "pastebin",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 28,
+    "sector": 0,
+    "zone": 1,
+    "cell": 77645,
+    "service": "rust_mcp_services",
+    "perm": "read",
+    "resource": "/opt/mcp/bin",
+    "source": "static"
+  },
+  {
+    "shard": 28,
+    "sector": 0,
+    "zone": 4,
+    "cell": 77648,
+    "service": "rust_mcp_services",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 28,
+    "sector": 8,
+    "zone": 12,
+    "cell": 78032,
+    "service": "rust_mcp_services",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 28,
+    "sector": 0,
+    "zone": 12,
+    "cell": 77656,
+    "service": "rust_mcp_services",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 28,
+    "sector": 1,
+    "zone": 12,
+    "cell": 77703,
+    "service": "rust_mcp_services",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 28,
+    "sector": 14,
+    "zone": 7,
+    "cell": 78309,
+    "service": "rust_mcp_services",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 0,
+    "zone": 1,
+    "cell": 160835,
+    "service": "solfunmeme_service",
+    "perm": "read",
+    "resource": "/opt/solfunmeme/bin",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 0,
+    "zone": 4,
+    "cell": 160838,
+    "service": "solfunmeme_service",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 8,
+    "zone": 12,
+    "cell": 161222,
+    "service": "solfunmeme_service",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 0,
+    "zone": 12,
+    "cell": 160846,
+    "service": "solfunmeme_service",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 1,
+    "zone": 12,
+    "cell": 160893,
+    "service": "solfunmeme_service",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 58,
+    "sector": 14,
+    "zone": 7,
+    "cell": 161499,
+    "service": "solfunmeme_service",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 0,
+    "zone": 4,
+    "cell": 13869,
+    "service": "wg_stego_tunnel",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 0,
+    "zone": 1,
+    "cell": 13866,
+    "service": "wg_stego_tunnel",
+    "perm": "read",
+    "resource": "/opt/wg-stego/bin",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 8,
+    "zone": 12,
+    "cell": 14253,
+    "service": "wg_stego_tunnel",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 0,
+    "zone": 12,
+    "cell": 13877,
+    "service": "wg_stego_tunnel",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 1,
+    "zone": 12,
+    "cell": 13924,
+    "service": "wg_stego_tunnel",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 5,
+    "sector": 14,
+    "zone": 7,
+    "cell": 14530,
+    "service": "wg_stego_tunnel",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  },
+  {
+    "shard": 7,
+    "sector": 0,
+    "zone": 4,
+    "cell": 19415,
+    "service": "zos_server",
+    "perm": "read",
+    "resource": "/",
+    "source": "static"
+  },
+  {
+    "shard": 7,
+    "sector": 0,
+    "zone": 1,
+    "cell": 19412,
+    "service": "zos_server",
+    "perm": "read",
+    "resource": "/opt/zos/bin",
+    "source": "static"
+  },
+  {
+    "shard": 7,
+    "sector": 8,
+    "zone": 12,
+    "cell": 19799,
+    "service": "zos_server",
+    "perm": "connect",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 7,
+    "sector": 0,
+    "zone": 12,
+    "cell": 19423,
+    "service": "zos_server",
+    "perm": "read",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 7,
+    "sector": 1,
+    "zone": 12,
+    "cell": 19470,
+    "service": "zos_server",
+    "perm": "write",
+    "resource": "tcp",
+    "source": "static"
+  },
+  {
+    "shard": 7,
+    "sector": 14,
+    "zone": 7,
+    "cell": 20076,
+    "service": "zos_server",
+    "perm": "neverallow:setuid",
+    "resource": "proc",
+    "source": "static"
+  }
+]

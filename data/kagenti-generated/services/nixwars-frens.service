@@ -1,0 +1,35 @@
+[Unit]
+Description=Nix-Wars game server + FRENS witness
+After=network.target
+
+[Service]
+Type=simple
+User=mdupont
+Group=mdupont
+SELinuxContext=system_u:system_r:svc_nixwars_frens_t:s0
+
+ExecStart=/opt/nixwars/bin/nixwars-frens
+Restart=always
+RestartSec=10
+Environment="PORT=8114"
+Environment="MONSTER_SHARD=21"
+Environment="IPV6_ADDR=fd00::71:21:0"
+
+# Security (monster-zone gold standard)
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+
+# Network isolation
+IPAddressAllow=10.71.0.0/16
+IPAddressAllow=fd00::71:0:0/48
+IPAddressAllow=127.0.0.0/8
+IPAddressAllow=::1/128
+
+# Resource limits
+MemoryMax=2G
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

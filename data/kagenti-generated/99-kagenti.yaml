@@ -1,0 +1,21 @@
+# kagenti agent IPv6 addresses
+# Add to /etc/netplan/99-kagenti.yaml
+network:
+  version: 2
+  ethernets:
+    eth0:
+      addresses:
+        - fd00::71:50:0/128  # fractranllama (shard 50)
+        - fd00::71:65:0/128  # moltis (shard 65)
+        - fd00::71:21:0/128  # nixwars-frens (shard 21)
+        - fd00::71:61:0/128  # openclaw (shard 61)
+        - fd00::71:38:0/128  # pastebin (shard 38)
+        - fd00::71:7:0/128  # wg-stego-tunnel (shard 7)
+        - fd00::71:1:0/128  # kagenti-portal (shard 1)
+        - fd00::71:28:0/128  # rust-mcp-services (shard 28)
+        - fd00::71:16:0/128  # solfunmeme-service (shard 16)
+        - fd00::71:34:0/128  # zos-server (shard 34)
+        - fd00::71:66:0/128  # kiro-session (shard 66)
+        - fd00::71:32:0/128  # kiro-feed-uucp (shard 32)
+        - fd00::71:57:0/128  # kiro1-shard42 (shard 57)
+        - fd00::71:19:0/128  # kiro-qms (shard 19)

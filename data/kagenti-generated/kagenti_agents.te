@@ -1,0 +1,146 @@
+policy_module(kagenti_agents, 1.0.0)
+
+require {
+    type bin_t; type usr_t; type tmp_t; type node_t;
+    class file { read write getattr open create execute };
+    class dir { read search open };
+    class tcp_socket { create connect read write bind listen accept };
+    class udp_socket { create connect read write };
+    class process { setuid setgid signal };
+}
+
+# === fractranllama (shard 50, user mdupont) ===
+type svc_fractranllama_t;
+allow svc_fractranllama_t usr_t:file { read getattr open };
+allow svc_fractranllama_t usr_t:dir { read search open };
+allow svc_fractranllama_t bin_t:file { read getattr open execute };
+allow svc_fractranllama_t node_t:tcp_socket { create connect bind listen accept read write };
+allow svc_fractranllama_t tmp_t:file { read write create };
+neverallow svc_fractranllama_t self:process { setuid setgid };
+neverallow svc_fractranllama_t usr_t:file { write append };
+
+# === moltis (shard 65, user moltis) ===
+type svc_moltis_t;
+allow svc_moltis_t usr_t:file { read getattr open };
+allow svc_moltis_t usr_t:dir { read search open };
+allow svc_moltis_t bin_t:file { read getattr open execute };
+allow svc_moltis_t node_t:tcp_socket { create connect bind listen accept read write };
+allow svc_moltis_t tmp_t:file { read write create };
+neverallow svc_moltis_t self:process { setuid setgid };
+neverallow svc_moltis_t usr_t:file { write append };
+
+# === nixwars-frens (shard 21, user mdupont) ===
+type svc_nixwars_frens_t;
+allow svc_nixwars_frens_t usr_t:file { read getattr open };
+allow svc_nixwars_frens_t usr_t:dir { read search open };
+allow svc_nixwars_frens_t bin_t:file { read getattr open execute };
+allow svc_nixwars_frens_t node_t:tcp_socket { create connect bind listen accept read write };
+allow svc_nixwars_frens_t tmp_t:file { read write create };
+neverallow svc_nixwars_frens_t self:process { setuid setgid };
+neverallow svc_nixwars_frens_t usr_t:file { write append };
+
+# === openclaw (shard 61, user mdupont) ===
+type svc_openclaw_t;
+allow svc_openclaw_t usr_t:file { read getattr open };
+allow svc_openclaw_t usr_t:dir { read search open };
+allow svc_openclaw_t bin_t:file { read getattr open execute };
+allow svc_openclaw_t node_t:tcp_socket { create connect bind listen accept read write };
+allow svc_openclaw_t tmp_t:file { read write create };
+neverallow svc_openclaw_t self:process { setuid setgid };
+neverallow svc_openclaw_t usr_t:file { write append };
+
+# === pastebin (shard 38, user mdupont) ===
+type svc_pastebin_t;
+allow svc_pastebin_t usr_t:file { read getattr open };
+allow svc_pastebin_t usr_t:dir { read search open };
+allow svc_pastebin_t bin_t:file { read getattr open execute };
+allow svc_pastebin_t node_t:tcp_socket { create connect bind listen accept read write };
+allow svc_pastebin_t tmp_t:file { read write create };
+neverallow svc_pastebin_t self:process { setuid setgid };
+neverallow svc_pastebin_t usr_t:file { write append };
+
+# === wg-stego-tunnel (shard 7, user wgtunnel) ===
+type svc_wg_stego_tunnel_t;
+allow svc_wg_stego_tunnel_t usr_t:file { read getattr open };
+allow svc_wg_stego_tunnel_t usr_t:dir { read search open };
+allow svc_wg_stego_tunnel_t bin_t:file { read getattr open execute };
+allow svc_wg_stego_tunnel_t node_t:tcp_socket { create connect bind listen accept read write };
+allow svc_wg_stego_tunnel_t tmp_t:file { read write create };
+neverallow svc_wg_stego_tunnel_t self:process { setuid setgid };
+neverallow svc_wg_stego_tunnel_t usr_t:file { write append };
+
+# === kagenti-portal (shard 1, user kagenti) ===
+type svc_kagenti_portal_t;
+allow svc_kagenti_portal_t usr_t:file { read getattr open };
+allow svc_kagenti_portal_t usr_t:dir { read search open };
+allow svc_kagenti_portal_t bin_t:file { read getattr open execute };
+allow svc_kagenti_portal_t node_t:tcp_socket { create connect bind listen accept read write };
+allow svc_kagenti_portal_t tmp_t:file { read write create };
+neverallow svc_kagenti_portal_t self:process { setuid setgid };
+neverallow svc_kagenti_portal_t usr_t:file { write append };
+
+# === rust-mcp-services (shard 28, user mdupont) ===
+type svc_rust_mcp_services_t;
+allow svc_rust_mcp_services_t usr_t:file { read getattr open };
+allow svc_rust_mcp_services_t usr_t:dir { read search open };
+allow svc_rust_mcp_services_t bin_t:file { read getattr open execute };
+allow svc_rust_mcp_services_t node_t:tcp_socket { create connect bind listen accept read write };
+allow svc_rust_mcp_services_t tmp_t:file { read write create };
+neverallow svc_rust_mcp_services_t self:process { setuid setgid };
+neverallow svc_rust_mcp_services_t usr_t:file { write append };
+
+# === solfunmeme-service (shard 16, user mdupont) ===
+type svc_solfunmeme_service_t;
+allow svc_solfunmeme_service_t usr_t:file { read getattr open };
+allow svc_solfunmeme_service_t usr_t:dir { read search open };
+allow svc_solfunmeme_service_t bin_t:file { read getattr open execute };
+allow svc_solfunmeme_service_t node_t:tcp_socket { create connect bind listen accept read write };
+allow svc_solfunmeme_service_t tmp_t:file { read write create };
+neverallow svc_solfunmeme_service_t self:process { setuid setgid };
+neverallow svc_solfunmeme_service_t usr_t:file { write append };
+
+# === zos-server (shard 34, user zos) ===
+type svc_zos_server_t;
+allow svc_zos_server_t usr_t:file { read getattr open };
+allow svc_zos_server_t usr_t:dir { read search open };
+allow svc_zos_server_t bin_t:file { read getattr open execute };
+allow svc_zos_server_t node_t:tcp_socket { create connect bind listen accept read write };
+allow svc_zos_server_t tmp_t:file { read write create };
+neverallow svc_zos_server_t self:process { setuid setgid };
+neverallow svc_zos_server_t usr_t:file { write append };
+
+# === kiro-session (shard 66, user kiro) ===
+type svc_kiro_session_t;
+allow svc_kiro_session_t usr_t:file { read getattr open };
+allow svc_kiro_session_t usr_t:dir { read search open };
+allow svc_kiro_session_t bin_t:file { read getattr open execute };
+allow svc_kiro_session_t tmp_t:file { read write create };
+neverallow svc_kiro_session_t self:process { setuid setgid };
+neverallow svc_kiro_session_t usr_t:file { write append };
+
+# === kiro-feed-uucp (shard 32, user kiro) ===
+type svc_kiro_feed_uucp_t;
+allow svc_kiro_feed_uucp_t usr_t:file { read getattr open };
+allow svc_kiro_feed_uucp_t usr_t:dir { read search open };
+allow svc_kiro_feed_uucp_t bin_t:file { read getattr open execute };
+allow svc_kiro_feed_uucp_t tmp_t:file { read write create };
+neverallow svc_kiro_feed_uucp_t self:process { setuid setgid };
+neverallow svc_kiro_feed_uucp_t usr_t:file { write append };
+
+# === kiro1-shard42 (shard 57, user kiro1) ===
+type svc_kiro1_shard42_t;
+allow svc_kiro1_shard42_t usr_t:file { read getattr open };
+allow svc_kiro1_shard42_t usr_t:dir { read search open };
+allow svc_kiro1_shard42_t bin_t:file { read getattr open execute };
+allow svc_kiro1_shard42_t tmp_t:file { read write create };
+neverallow svc_kiro1_shard42_t self:process { setuid setgid };
+neverallow svc_kiro1_shard42_t usr_t:file { write append };
+
+# === kiro-qms (shard 19, user kiro) ===
+type svc_kiro_qms_t;
+allow svc_kiro_qms_t usr_t:file { read getattr open };
+allow svc_kiro_qms_t usr_t:dir { read search open };
+allow svc_kiro_qms_t bin_t:file { read getattr open execute };
+allow svc_kiro_qms_t tmp_t:file { read write create };
+neverallow svc_kiro_qms_t self:process { setuid setgid };
+neverallow svc_kiro_qms_t usr_t:file { write append };

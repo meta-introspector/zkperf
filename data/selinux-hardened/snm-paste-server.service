@@ -1,0 +1,24 @@
+[Unit]
+Description=SNM Atlas Paste Server - Micro UI for Monster Group Spectrum
+After=network.target
+
+[Service]
+Type=simple
+User=mdupont
+Group=mdupont
+WorkingDirectory=/home/mdupont/2026/03-march/07/monster-ngram-learning
+ExecStart=/usr/bin/python3 /home/mdupont/zos-server/plugins/snm_paste_server.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+
+# === zkperf hardening (auto-generated) ===
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

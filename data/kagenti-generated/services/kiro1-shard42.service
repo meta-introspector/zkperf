@@ -1,0 +1,34 @@
+[Unit]
+Description=Shard 42 agent
+After=network.target
+
+[Service]
+Type=simple
+User=kiro1
+Group=kiro1
+SELinuxContext=system_u:system_r:svc_kiro1_shard42_t:s0
+
+ExecStart=/mnt/data1/shards/42/home/kiro-1/bin/agent
+Restart=always
+RestartSec=10
+Environment="MONSTER_SHARD=57"
+Environment="IPV6_ADDR=fd00::71:57:0"
+
+# Security (monster-zone gold standard)
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+
+# Network isolation
+IPAddressAllow=10.71.0.0/16
+IPAddressAllow=fd00::71:0:0/48
+IPAddressAllow=127.0.0.0/8
+IPAddressAllow=::1/128
+
+# Resource limits
+MemoryMax=2G
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

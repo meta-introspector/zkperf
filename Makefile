@@ -102,3 +102,28 @@ dev:
 
 dev-shell:
 	nix develop --command bash
+
+# --- SELinux Policy Generation (zkperf) ---
+
+SERVICES_ALL := $(wildcard ~/projects/cicadia71/shards/fractran_meta_compiler/bootstrap_chain/*.service) \
+  $(wildcard ~/projects/cicadia71/shards/fractran_meta_compiler/*.service) \
+  $(wildcard ~/projects/cicadia71/shards/shard0/nix-wars/solana/*.service) \
+  $(wildcard ~/projects/cicadia71/shards/shard58/*.service) \
+  zkperf-da51.service
+
+.PHONY: selinux-static selinux-harden selinux-bench
+
+selinux-static:
+	python3 scripts/selinux_static_analyze.py $(SERVICES_ALL)
+
+selinux-harden: selinux-static
+	python3 scripts/selinux_harden.py data/selinux-static/access.json $(SERVICES_ALL)
+
+selinux-bench:
+	@echo "Usage: make selinux-bench SVC=<service-name> DUR=30"
+	scripts/record-service.sh $(SVC) $(DUR)
+
+selinux-merge: selinux-static
+	python3 scripts/selinux_merge.py data/selinux-static/access.json $(wildcard data/bench-*/access.json)
+
+selinux-all: selinux-static selinux-harden selinux-merge

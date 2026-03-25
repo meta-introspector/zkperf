@@ -1,0 +1,142 @@
+[
+  {
+    "name": "fractranllama",
+    "user": "mdupont",
+    "shard": 50,
+    "ipv4": "10.71.0.50",
+    "ipv6": "fd00::71:50:0",
+    "dns": "fractranllama.nixwars.local",
+    "port": 8120,
+    "selinux_type": "svc_fractranllama_t"
+  },
+  {
+    "name": "moltis",
+    "user": "moltis",
+    "shard": 65,
+    "ipv4": "10.71.0.65",
+    "ipv6": "fd00::71:65:0",
+    "dns": "moltis.nixwars.local",
+    "port": 8130,
+    "selinux_type": "svc_moltis_t"
+  },
+  {
+    "name": "nixwars-frens",
+    "user": "mdupont",
+    "shard": 21,
+    "ipv4": "10.71.0.21",
+    "ipv6": "fd00::71:21:0",
+    "dns": "nixwars-frens.nixwars.local",
+    "port": 8114,
+    "selinux_type": "svc_nixwars_frens_t"
+  },
+  {
+    "name": "openclaw",
+    "user": "mdupont",
+    "shard": 61,
+    "ipv4": "10.71.0.61",
+    "ipv6": "fd00::71:61:0",
+    "dns": "openclaw.nixwars.local",
+    "port": 8140,
+    "selinux_type": "svc_openclaw_t"
+  },
+  {
+    "name": "pastebin",
+    "user": "mdupont",
+    "shard": 38,
+    "ipv4": "10.71.0.38",
+    "ipv6": "fd00::71:38:0",
+    "dns": "pastebin.nixwars.local",
+    "port": 8150,
+    "selinux_type": "svc_pastebin_t"
+  },
+  {
+    "name": "wg-stego-tunnel",
+    "user": "wgtunnel",
+    "shard": 7,
+    "ipv4": "10.71.0.7",
+    "ipv6": "fd00::71:7:0",
+    "dns": "wg-stego-tunnel.nixwars.local",
+    "port": 8160,
+    "selinux_type": "svc_wg_stego_tunnel_t"
+  },
+  {
+    "name": "kagenti-portal",
+    "user": "kagenti",
+    "shard": 1,
+    "ipv4": "10.71.0.1",
+    "ipv6": "fd00::71:1:0",
+    "dns": "kagenti-portal.nixwars.local",
+    "port": 8201,
+    "selinux_type": "svc_kagenti_portal_t"
+  },
+  {
+    "name": "rust-mcp-services",
+    "user": "mdupont",
+    "shard": 28,
+    "ipv4": "10.71.0.28",
+    "ipv6": "fd00::71:28:0",
+    "dns": "rust-mcp-services.nixwars.local",
+    "port": 8170,
+    "selinux_type": "svc_rust_mcp_services_t"
+  },
+  {
+    "name": "solfunmeme-service",
+    "user": "mdupont",
+    "shard": 16,
+    "ipv4": "10.71.0.16",
+    "ipv6": "fd00::71:16:0",
+    "dns": "solfunmeme-service.nixwars.local",
+    "port": 8180,
+    "selinux_type": "svc_solfunmeme_service_t"
+  },
+  {
+    "name": "zos-server",
+    "user": "zos",
+    "shard": 34,
+    "ipv4": "10.71.0.34",
+    "ipv6": "fd00::71:34:0",
+    "dns": "zos-server.nixwars.local",
+    "port": 8190,
+    "selinux_type": "svc_zos_server_t"
+  },
+  {
+    "name": "kiro-session",
+    "user": "kiro",
+    "shard": 66,
+    "ipv4": "10.71.0.66",
+    "ipv6": "fd00::71:66:0",
+    "dns": "kiro-session.nixwars.local",
+    "port": 0,
+    "selinux_type": "svc_kiro_session_t"
+  },
+  {
+    "name": "kiro-feed-uucp",
+    "user": "kiro",
+    "shard": 32,
+    "ipv4": "10.71.0.32",
+    "ipv6": "fd00::71:32:0",
+    "dns": "kiro-feed-uucp.nixwars.local",
+    "port": 0,
+    "selinux_type": "svc_kiro_feed_uucp_t"
+  },
+  {
+    "name": "kiro1-shard42",
+    "user": "kiro1",
+    "shard": 57,
+    "ipv4": "10.71.0.57",
+    "ipv6": "fd00::71:57:0",
+    "dns": "kiro1-shard42.nixwars.local",
+    "port": 0,
+    "selinux_type": "svc_kiro1_shard42_t"
+  },
+  {
+    "name": "kiro-qms",
+    "user": "kiro",
+    "shard": 19,
+    "ipv4": "10.71.0.19",
+    "ipv6": "fd00::71:19:0",
+    "dns": "kiro-qms.nixwars.local",
+    "port": 0,
+    "selinux_type": "svc_kiro_qms_t"
+  }
+]
