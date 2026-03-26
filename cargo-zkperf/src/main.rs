@@ -9,7 +9,7 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::path::Path;
 use syn::visit::Visit;
-use syn::{Expr, Item, ItemFn, Stmt, Visibility};
+use syn::{Expr, ItemFn, Visibility};
 
 #[derive(Debug, Clone, Serialize)]
 struct FnRisk {

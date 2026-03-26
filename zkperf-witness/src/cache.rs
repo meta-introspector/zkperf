@@ -84,7 +84,7 @@ pub fn list_all() -> Vec<CacheEntry> {
         return vec![];
     };
     rd.filter_map(|e| e.ok())
-        .filter(|e| e.path().extension().map_or(false, |x| x == "json"))
+        .filter(|e| e.path().extension().is_some_and(|x| x == "json"))
         .filter_map(|e| load_entry(&e.path()))
         .collect()
 }
@@ -97,6 +97,6 @@ fn load_entry(path: &PathBuf) -> Option<CacheEntry> {
 fn save_entry(path: &PathBuf, entry: &CacheEntry) -> std::io::Result<()> {
     std::fs::create_dir_all(path.parent().unwrap())?;
     let json = serde_json::to_string(entry)
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        .map_err(|e| std::io::Error::other(e))?;
     std::fs::write(path, json)
 }

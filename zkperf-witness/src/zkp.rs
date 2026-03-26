@@ -196,7 +196,7 @@ fn random_nonce() -> String {
             use std::io::Read;
             let _ = f.read_exact(&mut buf);
         }
-        h.update(&buf);
+        h.update(buf);
     }
     hex::encode(h.finalize())
 }

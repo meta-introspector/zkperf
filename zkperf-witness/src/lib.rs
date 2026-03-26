@@ -485,7 +485,7 @@ fn record_inner(w: &Witness) -> std::io::Result<()> {
     let filename = format!("{}_{}.witness.json", w.timestamp, w.context);
     let path = dir.join(filename);
     let json =
-        serde_json::to_string(w).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        serde_json::to_string(w).map_err(|e| std::io::Error::other(e))?;
     std::fs::write(path, json)?;
     // Update cache stats
     cache::update(w);
@@ -497,7 +497,7 @@ fn save_proof(w: &Witness, proof: &zkp::WitnessProof) -> std::io::Result<()> {
     std::fs::create_dir_all(&dir)?;
     let filename = format!("{}_{}.proof.json", w.timestamp, w.context);
     let json = serde_json::to_string(proof)
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        .map_err(|e| std::io::Error::other(e))?;
     std::fs::write(dir.join(filename), json)
 }
 

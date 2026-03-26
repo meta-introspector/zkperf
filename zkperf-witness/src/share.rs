@@ -103,14 +103,14 @@ impl WitnessBundle {
     pub fn save(&self, path: &std::path::Path) -> std::io::Result<()> {
         let json = self
             .to_json()
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(|e| std::io::Error::other(e))?;
         std::fs::write(path, json)
     }
 
     /// Import from file.
     pub fn load(path: &std::path::Path) -> std::io::Result<Self> {
         let data = std::fs::read_to_string(path)?;
-        Self::from_json(&data).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+        Self::from_json(&data).map_err(|e| std::io::Error::other(e))
     }
 }
 
@@ -130,7 +130,7 @@ fn merkle_root(witnesses: &[OwnedWitness]) -> String {
         .collect();
 
     while hashes.len() > 1 {
-        let mut next = Vec::with_capacity((hashes.len() + 1) / 2);
+        let mut next = Vec::with_capacity(hashes.len().div_ceil(2));
         for pair in hashes.chunks(2) {
             let mut h = Sha256::new();
             h.update(pair[0]);
@@ -153,7 +153,7 @@ pub fn bundle_all(node_id: &str) -> std::io::Result<WitnessBundle> {
     let mut witnesses = Vec::new();
     if let Ok(rd) = std::fs::read_dir(&dir) {
         for entry in rd.filter_map(|e| e.ok()) {
-            if entry.path().extension().map_or(false, |x| x == "json") {
+            if entry.path().extension().is_some_and(|x| x == "json") {
                 if let Ok(data) = std::fs::read_to_string(entry.path()) {
                     if let Ok(w) = serde_json::from_str::<OwnedWitness>(&data) {
                         witnesses.push(w);
