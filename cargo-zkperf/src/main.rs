@@ -361,7 +361,9 @@ fn main() {
         "annotate" => cmd_annotate(dir),
         "report" => cmd_report(dir),
         "shard" => cmd_shard(dir),
-        _ => eprintln!("usage: cargo zkperf <audit|annotate|report|shard> [path]"),
+        "prompt" => cmd_prompt(dir),
+        "verify" => cmd_verify_shard(dir),
+        _ => eprintln!("usage: cargo zkperf <audit|annotate|report|shard|prompt|verify> [path]"),
     }
 }
 
@@ -460,4 +462,119 @@ fn cmd_shard(dir: &str) {
     std::fs::write(&manifest_path, serde_json::to_string_pretty(&manifest).unwrap()).ok();
     eprintln!("\n{} shards written to {}", shards.len(), out_dir);
     eprintln!("manifest: {}", manifest_path);
+}
+
+/// Generate implementation prompts from CBOR shards.
+/// Usage: cargo-zkperf prompt ~/.zkperf/shards/zos-server
+fn cmd_prompt(shard_dir: &str) {
+    let manifest_path = format!("{}/manifest.json", shard_dir);
+    let manifest: Vec<serde_json::Value> = match std::fs::read_to_string(&manifest_path) {
+        Ok(s) => serde_json::from_str(&s).unwrap_or_default(),
+        Err(_) => { eprintln!("no manifest.json in {}", shard_dir); return; }
+    };
+
+    for entry in &manifest {
+        let path = entry["path"].as_str().unwrap_or("");
+        let domain = entry["domain"].as_str().unwrap_or("unknown");
+        let prime = entry["prime"].as_u64().unwrap_or(0);
+
+        let raw = match std::fs::read(path) { Ok(r) => r, Err(_) => continue };
+        let val: ciborium::Value = ciborium::from_reader(&raw[..]).unwrap();
+        let data: serde_json::Value = if let ciborium::Value::Tag(55889, inner) = val {
+            ciborium::Value::deserialized(&inner).unwrap_or_default()
+        } else { continue };
+
+        let rows = data["table"]["rows"].as_array().unwrap();
+        let mut prompt = format!(
+            "# Implement {} functions — \"{}\" shard (prime {})\n\n\
+             Each function has a performance contract enforced by zkperf.\n\n\
+             ```toml\n[dependencies]\nzkperf-macros = {{ path = \"zkperf-macros\" }}\nzkperf-witness = {{ path = \"zkperf-witness\" }}\n```\n\n",
+            rows.len(), domain, prime
+        );
+
+        for row in rows {
+            let r: Vec<&str> = row.as_array().unwrap().iter().map(|v| v.as_str().unwrap_or("")).collect();
+            let (name, complexity, max_ms, risk, sig) = (r[0], r[1], r[2], r[3], r[4]);
+            let max_n = match complexity { "O(1)" => "1", "O(n)" => "10000", "O(n^2)" => "1000", _ => "50" };
+            prompt += &format!(
+                "```rust\n#[witness_boundary(complexity = \"{}\", max_n = {}, max_ms = {})]\n\
+                 fn {}() -> Result<(), Box<dyn std::error::Error>> {{\n    \
+                 // Contract: <{}ms, {}, risk {}, sig {}\n    todo!()\n}}\n```\n\n",
+                complexity, max_n, max_ms, name, max_ms, complexity, risk, sig
+            );
+        }
+
+        prompt += "## Verify: `cargo-zkperf verify <src> <shard_dir>`\n";
+
+        let prompt_path = format!("{}/{}-{}.prompt.md", shard_dir, domain, prime);
+        std::fs::write(&prompt_path, &prompt).ok();
+        eprintln!("  {} → {}", domain, prompt_path);
+    }
+}
+
+/// Verify implementation matches shard contracts.
+/// Usage: cargo-zkperf verify src ~/.zkperf/shards/project
+fn cmd_verify_shard(args: &str) {
+    // args = "src_dir shard_dir"
+    let parts: Vec<&str> = args.splitn(2, ' ').collect();
+    let (src_dir, shard_dir) = if parts.len() == 2 {
+        (parts[0], parts[1])
+    } else {
+        eprintln!("usage: cargo-zkperf verify <src_dir> <shard_dir>");
+        return;
+    };
+
+    let manifest_path = format!("{}/manifest.json", shard_dir);
+    let manifest: Vec<serde_json::Value> = match std::fs::read_to_string(&manifest_path) {
+        Ok(s) => serde_json::from_str(&s).unwrap_or_default(),
+        Err(_) => { eprintln!("no manifest.json in {}", shard_dir); return; }
+    };
+
+    // Scan source for implemented functions
+    let impl_fns = scan_dir(src_dir);
+    let impl_map: std::collections::HashMap<&str, &FnRisk> = impl_fns.iter()
+        .map(|f| (f.name.as_str(), f)).collect();
+
+    let mut total = 0;
+    let mut found = 0;
+    let mut instrumented = 0;
+    let mut mismatches = Vec::new();
+
+    for entry in &manifest {
+        let path = entry["path"].as_str().unwrap_or("");
+        let raw = match std::fs::read(path) { Ok(r) => r, Err(_) => continue };
+        let val: ciborium::Value = ciborium::from_reader(&raw[..]).unwrap();
+        let data: serde_json::Value = if let ciborium::Value::Tag(55889, inner) = val {
+            ciborium::Value::deserialized(&inner).unwrap_or_default()
+        } else { continue };
+
+        let domain = data["domain"].as_str().unwrap_or("?");
+        let rows = data["table"]["rows"].as_array().unwrap();
+
+        for row in rows {
+            let name = row[0].as_str().unwrap_or("");
+            let expected_complexity = row[1].as_str().unwrap_or("");
+            total += 1;
+
+            if let Some(f) = impl_map.get(name) {
+                found += 1;
+                if f.has_witness_boundary || f.has_zkperf { instrumented += 1; }
+                if f.inferred_complexity != expected_complexity {
+                    mismatches.push(format!("  {} [{}]: expected {}, got {}",
+                        name, domain, expected_complexity, f.inferred_complexity));
+                }
+            }
+        }
+    }
+
+    eprintln!("=== Shard Verification ===");
+    eprintln!("  Functions in shards: {}", total);
+    eprintln!("  Found in source:     {} ({:.0}%)", found, found as f64 / total.max(1) as f64 * 100.0);
+    eprintln!("  Instrumented:        {} ({:.0}%)", instrumented, instrumented as f64 / found.max(1) as f64 * 100.0);
+    if mismatches.is_empty() {
+        eprintln!("  Complexity matches:  ✅ all match");
+    } else {
+        eprintln!("  Complexity mismatches: {}", mismatches.len());
+        for m in &mismatches { eprintln!("{}", m); }
+    }
 }
