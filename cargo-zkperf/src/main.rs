@@ -24,10 +24,14 @@ struct FnRisk {
     has_witness_boundary: bool,
     unsafe_blocks: usize,
     loop_count: usize,
+    loop_depth: usize,
     call_count: usize,
     risk_score: u32,
     risk_level: &'static str,
     signature: String,
+    // Inferred constraints (promises)
+    inferred_complexity: &'static str,
+    inferred_max_ms: u64,
 }
 
 #[derive(Default)]
@@ -59,15 +63,33 @@ impl<'ast> Visit<'ast> for Scanner {
         hasher.update(format!("{}::{}", self.file, name).as_bytes());
         let sig = hex::encode(&hasher.finalize()[..8]);
 
+        // Infer complexity from loop nesting
+        let inferred_complexity = match counter.max_loop_depth {
+            0 => "O(1)",
+            1 => "O(n)",
+            2 => "O(n^2)",
+            3 => "O(n^3)",
+            _ => "O(n^k)",
+        };
+
+        // Infer max_ms from LOC + complexity + calls
+        let inferred_max_ms = match counter.max_loop_depth {
+            0 => 100 + (counter.call_count as u64 * 10),
+            1 => 1000 + (loc as u64 * 10),
+            2 => 5000 + (loc as u64 * 50),
+            _ => 30000,
+        };
+
         // Risk scoring
         let mut risk: u32 = 0;
         if is_unsafe { risk += 30; }
         risk += counter.unsafe_blocks as u32 * 20;
         risk += counter.loop_count as u32 * 5;
+        risk += (counter.max_loop_depth as u32).saturating_sub(1) * 15; // nested loops
         if loc > 50 { risk += 10; }
         if loc > 100 { risk += 15; }
-        if !has_zkperf && !has_wb { risk += 10; } // uninstrumented penalty
-        if is_pub { risk += 5; } // public API surface
+        if !has_zkperf && !has_wb { risk += 10; }
+        if is_pub { risk += 5; }
 
         let risk_level = match risk {
             0..=10 => "low",
@@ -76,7 +98,6 @@ impl<'ast> Visit<'ast> for Scanner {
             _ => "critical",
         };
 
-        // Approximate line number from source
         let line = self.source[..self.source.find(&format!("fn {}", name)).unwrap_or(0)]
             .lines().count() + 1;
 
@@ -85,8 +106,11 @@ impl<'ast> Visit<'ast> for Scanner {
             is_pub, is_async, is_unsafe, has_zkperf, has_witness_boundary: has_wb,
             unsafe_blocks: counter.unsafe_blocks,
             loop_count: counter.loop_count,
+            loop_depth: counter.max_loop_depth,
             call_count: counter.call_count,
             risk_score: risk, risk_level, signature: sig,
+            inferred_complexity,
+            inferred_max_ms,
         });
 
         syn::visit::visit_item_fn(self, node);
@@ -97,6 +121,8 @@ impl<'ast> Visit<'ast> for Scanner {
 struct BlockCounter {
     unsafe_blocks: usize,
     loop_count: usize,
+    loop_depth: usize,
+    max_loop_depth: usize,
     call_count: usize,
 }
 
@@ -104,7 +130,16 @@ impl<'ast> Visit<'ast> for BlockCounter {
     fn visit_expr(&mut self, node: &'ast Expr) {
         match node {
             Expr::Unsafe(_) => self.unsafe_blocks += 1,
-            Expr::Loop(_) | Expr::While(_) | Expr::ForLoop(_) => self.loop_count += 1,
+            Expr::Loop(_) | Expr::While(_) | Expr::ForLoop(_) => {
+                self.loop_count += 1;
+                self.loop_depth += 1;
+                if self.loop_depth > self.max_loop_depth {
+                    self.max_loop_depth = self.loop_depth;
+                }
+                syn::visit::visit_expr(self, node);
+                self.loop_depth -= 1;
+                return;
+            }
             Expr::Call(_) | Expr::MethodCall(_) => self.call_count += 1,
             _ => {}
         }
@@ -159,10 +194,11 @@ fn cmd_audit(dir: &str) {
             if f.is_pub { "pub " } else { "" },
             if f.is_async { "async " } else { "" },
             if f.is_unsafe { "unsafe " } else { "" });
-        eprintln!("  {:>3} {:8} {}:{} {}fn {} ({}loc, {}loops, {}unsafe, {}calls)",
+        eprintln!("  {:>3} {:8} {}:{} {}fn {} [{}] max_ms={} ({}loc, d{}loops, {}unsafe, {}calls)",
             f.risk_score, f.risk_level,
             f.file.rsplit('/').next().unwrap_or(&f.file), f.line,
-            flags, f.name, f.loc, f.loop_count, f.unsafe_blocks, f.call_count);
+            flags, f.name, f.inferred_complexity, f.inferred_max_ms,
+            f.loc, f.loop_depth, f.unsafe_blocks, f.call_count);
     }
     if risky.len() > 30 { eprintln!("  ... and {} more", risky.len() - 30); }
 }
@@ -173,9 +209,8 @@ fn cmd_annotate(dir: &str) {
         .filter(|f| f.is_pub && !f.has_zkperf && !f.has_witness_boundary)
         .collect();
 
-    eprintln!("annotating {} public functions...", targets.len());
+    eprintln!("annotating {} public functions with inferred constraints...", targets.len());
 
-    // Group by file
     let mut by_file: std::collections::HashMap<&str, Vec<&&FnRisk>> = std::collections::HashMap::new();
     for f in &targets {
         by_file.entry(&f.file).or_default().push(f);
@@ -184,18 +219,34 @@ fn cmd_annotate(dir: &str) {
     for (file, fns) in &by_file {
         let source = std::fs::read_to_string(file).unwrap();
         let mut lines: Vec<String> = source.lines().map(|l| l.to_string()).collect();
-        // Insert in reverse order so line numbers stay valid
         let mut insertions: Vec<(usize, String)> = fns.iter()
-            .map(|f| (f.line - 1, format!("#[zkperf_macros::zkperf]")))
+            .map(|f| {
+                let annotation = format!(
+                    "#[zkperf_macros::witness_boundary(complexity = \"{}\", max_n = {}, max_ms = {})]",
+                    f.inferred_complexity,
+                    match f.inferred_complexity {
+                        "O(1)" => 1,
+                        "O(n)" => 10000,
+                        "O(n^2)" => 1000,
+                        "O(n^3)" => 100,
+                        _ => 50,
+                    },
+                    f.inferred_max_ms,
+                );
+                (f.line - 1, annotation)
+            })
             .collect();
         insertions.sort_by(|a, b| b.0.cmp(&a.0));
-        for (line, annotation) in insertions {
-            if line < lines.len() && !lines[line].contains("#[zkperf") {
-                lines.insert(line, annotation);
+        for (line, annotation) in &insertions {
+            if *line < lines.len() && !lines[*line].contains("#[zkperf") && !lines[*line].contains("witness_boundary") {
+                lines.insert(*line, annotation.clone());
             }
         }
         std::fs::write(file, lines.join("\n")).unwrap();
-        eprintln!("  {} — {} annotations added", file, fns.len());
+        eprintln!("  {} — {} constraints added", file, fns.len());
+        for f in fns {
+            eprintln!("    {} → {} max_ms={}", f.name, f.inferred_complexity, f.inferred_max_ms);
+        }
     }
 }
 
