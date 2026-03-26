@@ -101,9 +101,7 @@ impl WitnessBundle {
 
     /// Export to file.
     pub fn save(&self, path: &std::path::Path) -> std::io::Result<()> {
-        let json = self
-            .to_json()
-            .map_err(|e| std::io::Error::other(e))?;
+        let json = self.to_json().map_err(|e| std::io::Error::other(e))?;
         std::fs::write(path, json)
     }
 

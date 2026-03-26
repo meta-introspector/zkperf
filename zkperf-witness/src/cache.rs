@@ -96,7 +96,6 @@ fn load_entry(path: &PathBuf) -> Option<CacheEntry> {
 
 fn save_entry(path: &PathBuf, entry: &CacheEntry) -> std::io::Result<()> {
     std::fs::create_dir_all(path.parent().unwrap())?;
-    let json = serde_json::to_string(entry)
-        .map_err(|e| std::io::Error::other(e))?;
+    let json = serde_json::to_string(entry).map_err(|e| std::io::Error::other(e))?;
     std::fs::write(path, json)
 }
