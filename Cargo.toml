@@ -45,5 +45,9 @@ name = "zkperf-audit"
 path = "src/bin/audit.rs"
 
 [[bin]]
+name = "zkperf-regs"
+path = "src/bin/regs.rs"
+
+[[bin]]
 name = "zkperf-service"
 path = "src/bin/service.rs"
