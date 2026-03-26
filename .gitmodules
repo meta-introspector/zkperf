@@ -4,3 +4,7 @@
 [submodule "erdfa-publish"]
 	path = erdfa-publish
 	url = https://github.com/meta-introspector/erdfa-publish.git
+[submodule "linux-perf-file-reader"]
+	path = linux-perf-file-reader
+	url = /home/mdupont/git/github.com/meta-introspector/linux-perf-file-reader.git
+	branch = master
