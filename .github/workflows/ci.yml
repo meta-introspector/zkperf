@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - uses: cachix/install-nix-action@v27
         with:
           nix_path: nixpkgs=channel:nixos-unstable
@@ -21,25 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo test
-      - run: cargo fmt -- --check
-      - run: cargo clippy -- -D warnings
-
-  record:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - run: cargo build --release
-      - name: Record perf stat (self-build)
-        run: |
-          sudo sysctl -w kernel.perf_event_paranoid=-1
-          perf stat -e cycles,instructions,cache-misses \
-            -o recordings/self-build.stat.txt -- cargo build --release 2>/dev/null || true
-          cat recordings/self-build.stat.txt || true
-      - uses: actions/upload-artifact@v4
         with:
-          name: perf-recordings
-          path: recordings/
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test -p zkperf-witness -p zkperf-macros -p cargo-zkperf
+      - run: cargo fmt -- --check
+      - run: cargo clippy -p zkperf-witness -p zkperf-macros -p cargo-zkperf -- -D warnings
