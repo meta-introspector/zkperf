@@ -1,11 +1,22 @@
-/// zkperf-regs: cluster IPs, graph register patterns, infer function boundaries
+/// zkperf-regs: IP clustering + register pattern analysis
 ///
-/// No symbols needed — cluster by IP proximity, compare register fingerprints.
+/// Clusters IPs into regions, extracts register values per region,
+/// finds reused values and shared patterns across potential hash functions.
 
 use linux_perf_data::{PerfFileReader, PerfFileRecord};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
+
+// x86_64 register indices for perf
+const REG_NAMES: [(u64, &str); 14] = [
+    (0, "AX"), (1, "BX"), (2, "CX"), (3, "DX"),
+    (4, "SI"), (5, "DI"),
+    (7, "R8"), (8, "R9"), (9, "R10"), (10, "R11"),
+    (11, "R12"), (12, "R13"), (13, "R14"), (14, "R15"),
+];
+
+struct Sample { ip: u64, regs: Vec<(u64, u64)> } // (reg_idx, value)
 
 fn main() -> anyhow::Result<()> {
     let path = std::env::args().nth(1).unwrap_or_else(|| {
@@ -17,123 +28,174 @@ fn main() -> anyhow::Result<()> {
     let PerfFileReader { mut perf_file, mut record_iter, .. } =
         PerfFileReader::parse_file(file)?;
 
-    // Collect all (ip, timestamp) pairs
-    let mut ip_samples: Vec<(u64, u64)> = Vec::new();
+    let mut samples: Vec<Sample> = Vec::new();
 
     while let Some(record) = record_iter.next_record(&mut perf_file)? {
         if let PerfFileRecord::EventRecord { record, .. } = record {
-            let ts = record.common_data().ok().and_then(|c| c.timestamp).unwrap_or(0);
             if let Ok(parsed) = record.parse() {
                 use linux_perf_data::linux_perf_event_reader::EventRecord;
                 if let EventRecord::Sample(s) = parsed {
-                    if let Some(ip) = s.ip {
-                        ip_samples.push((ip, ts));
+                    let ip = s.ip.unwrap_or(0);
+                    let mut regs = Vec::new();
+                    if let Some(ref ir) = s.intr_regs {
+                        for &(idx, _) in &REG_NAMES {
+                            if let Some(val) = ir.get(idx) {
+                                regs.push((idx, val));
+                            }
+                        }
                     }
+                    samples.push(Sample { ip, regs });
                 }
             }
         }
     }
 
-    eprintln!("collected {} samples", ip_samples.len());
+    let with_regs = samples.iter().filter(|s| !s.regs.is_empty()).count();
+    eprintln!("samples: {}, with registers: {}", samples.len(), with_regs);
 
-    // Cluster IPs into 4K-page buckets → infer function boundaries
+    // Cluster IPs into 4K-page regions
     let mut page_counts: BTreeMap<u64, u64> = BTreeMap::new();
-    for &(ip, _) in &ip_samples {
-        *page_counts.entry(ip >> 12).or_default() += 1;
-    }
+    for s in &samples { *page_counts.entry(s.ip >> 12).or_default() += 1; }
 
-    // Merge adjacent pages into regions
-    let mut regions: Vec<(u64, u64, u64)> = Vec::new(); // (start_page, end_page, count)
+    let mut regions: Vec<(u64, u64, u64)> = Vec::new();
     for (&page, &count) in &page_counts {
         if let Some(last) = regions.last_mut() {
-            if page <= last.1 + 1 {
-                last.1 = page;
-                last.2 += count;
-                continue;
-            }
+            if page <= last.1 + 1 { last.1 = page; last.2 += count; continue; }
         }
         regions.push((page, page, count));
     }
 
-    println!("═══ IP REGIONS (inferred functions) ═══\n");
-    println!("{:>4} {:>14} {:>14} {:>8} {:>8}", "id", "start", "end", "pages", "samples");
-    println!("{}", "─".repeat(55));
-
-    let mut region_id = 0;
-    let mut region_map: BTreeMap<u64, usize> = BTreeMap::new(); // page → region_id
+    // Assign samples to regions
+    let mut region_map: BTreeMap<u64, usize> = BTreeMap::new();
+    let mut rid = 0;
     for (start, end, count) in &regions {
         if *count < 10 { continue; }
-        let pages = end - start + 1;
-        println!("R{:<3} {:14x} {:14x} {:8} {:8}", region_id, start << 12, (end + 1) << 12, pages, count);
-        for p in *start..=*end {
-            region_map.insert(p, region_id);
-        }
-        region_id += 1;
+        for p in *start..=*end { region_map.insert(p, rid); }
+        rid += 1;
     }
+    let n_regions = rid;
 
-    // Per-region: IP histogram (fine-grained hotspots within each function)
-    println!("\n═══ HOTSPOTS PER REGION (top 5 IPs) ═══\n");
-    let mut region_ips: Vec<BTreeMap<u64, u64>> = vec![BTreeMap::new(); region_id];
-    let mut region_times: Vec<Vec<u64>> = vec![Vec::new(); region_id];
-    for &(ip, ts) in &ip_samples {
-        if let Some(&rid) = region_map.get(&(ip >> 12)) {
-            *region_ips[rid].entry(ip).or_default() += 1;
-            region_times[rid].push(ts);
+    // Collect register values per region
+    let mut region_regs: Vec<HashMap<u64, Vec<u64>>> = vec![HashMap::new(); n_regions];
+    for s in &samples {
+        if let Some(&rid) = region_map.get(&(s.ip >> 12)) {
+            for &(idx, val) in &s.regs {
+                region_regs[rid].entry(idx).or_default().push(val);
+            }
         }
     }
 
-    for rid in 0..region_id {
-        let mut ranked: Vec<_> = region_ips[rid].iter().collect();
-        ranked.sort_by(|a, b| b.1.cmp(a.1));
-        let total: u64 = ranked.iter().map(|(_, c)| **c).sum();
-        let unique = ranked.len();
-        println!("R{}: {} samples, {} unique IPs", rid, total, unique);
-        for (ip, count) in ranked.iter().take(5) {
-            let pct = **count as f64 / total as f64 * 100.0;
-            println!("  0x{:x}: {:6} ({:.1}%)", ip, count, pct);
+    // Print regions
+    println!("═══ REGIONS ═══\n");
+    rid = 0;
+    for (start, end, count) in &regions {
+        if *count < 10 {continue;}
+        let has_regs = !region_regs[rid].is_empty();
+        println!("R{}: 0x{:x}-0x{:x} ({} samples, regs={})",
+            rid, start << 12, (end+1) << 12, count, has_regs);
+        rid += 1;
+    }
+
+    if with_regs == 0 {
+        println!("\n⚠ No register data found. Re-record with --intr-regs=AX,BX,CX,DX,SI,DI,R8,...");
+        println!("  make -f Makefile.zkperf record");
+        return Ok(());
+    }
+
+    // Per-region register fingerprint
+    println!("\n═══ REGISTER FINGERPRINTS PER REGION ═══\n");
+    let mut fingerprints: Vec<Vec<char>> = Vec::new();
+    for rid in 0..n_regions {
+        let mut fp = Vec::new();
+        print!("R{:2}: ", rid);
+        for &(idx, name) in &REG_NAMES {
+            let vals = region_regs[rid].get(&idx);
+            let tag = match vals {
+                None => ' ',
+                Some(v) if v.is_empty() => ' ',
+                Some(v) => {
+                    let mn = *v.iter().min().unwrap();
+                    let mx = *v.iter().max().unwrap();
+                    let range = mx.saturating_sub(mn);
+                    if range == 0 { 'C' }       // constant
+                    else if range < 0x100 { 'L' } // low
+                    else if range < 0x10000 { 'M' } // medium
+                    else { 'H' }                  // high variance
+                }
+            };
+            fp.push(tag);
+            print!("{}:{} ", name, tag);
         }
         println!();
+        fingerprints.push(fp);
     }
 
-    // Time-series: which region is active when (execution order)
-    println!("═══ EXECUTION TIMELINE (region transitions) ═══\n");
-    let mut timeline: Vec<(u64, usize)> = Vec::new();
-    for &(ip, ts) in &ip_samples {
-        if let Some(&rid) = region_map.get(&(ip >> 12)) {
-            if timeline.last().map(|(_, r)| *r != rid).unwrap_or(true) {
-                timeline.push((ts, rid));
+    // Find regions with identical fingerprints
+    println!("\n═══ IDENTICAL REGISTER PATTERNS ═══\n");
+    let mut fp_groups: HashMap<String, Vec<usize>> = HashMap::new();
+    for (rid, fp) in fingerprints.iter().enumerate() {
+        let key: String = fp.iter().collect();
+        fp_groups.entry(key).or_default().push(rid);
+    }
+    for (fp, rids) in &fp_groups {
+        if rids.len() > 1 {
+            println!("  pattern [{}]: regions {:?}", fp, rids);
+        }
+    }
+
+    // Find reused register VALUES across regions
+    println!("\n═══ SHARED REGISTER VALUES ACROSS REGIONS ═══\n");
+    for &(idx, name) in &REG_NAMES {
+        let mut val_to_regions: HashMap<u64, HashSet<usize>> = HashMap::new();
+        for rid in 0..n_regions {
+            if let Some(vals) = region_regs[rid].get(&idx) {
+                for &v in vals {
+                    val_to_regions.entry(v).or_default().insert(rid);
+                }
+            }
+        }
+        // Values appearing in 3+ regions
+        let shared: Vec<_> = val_to_regions.iter()
+            .filter(|(_, rs)| rs.len() >= 3)
+            .collect();
+        if !shared.is_empty() {
+            println!("  {}: {} values shared across 3+ regions", name, shared.len());
+            for (val, rs) in shared.iter().take(5) {
+                let mut rids: Vec<_> = rs.iter().collect();
+                rids.sort();
+                println!("    0x{:016x} → R{:?}", val, rids);
             }
         }
     }
-    // Print first 40 transitions
-    for (ts, rid) in timeline.iter().take(40) {
-        println!("  t={:16} → R{}", ts, rid);
-    }
-    if timeline.len() > 40 { println!("  ... ({} total transitions)", timeline.len()); }
 
-    // Region similarity: compare IP distributions
-    println!("\n═══ REGION SIMILARITY (cosine of IP histograms) ═══\n");
-    for i in 0..region_id {
-        for j in (i+1)..region_id {
-            // Compare: do they share any IPs? What's the overlap?
-            let a_ips: std::collections::HashSet<u64> = region_ips[i].keys().copied().collect();
-            let b_ips: std::collections::HashSet<u64> = region_ips[j].keys().copied().collect();
-            let overlap = a_ips.intersection(&b_ips).count();
-            let a_total: u64 = region_ips[i].values().sum();
-            let b_total: u64 = region_ips[j].values().sum();
-            if overlap > 0 || (a_total > 100 && b_total > 100) {
-                let a_span = a_ips.iter().max().unwrap_or(&0) - a_ips.iter().min().unwrap_or(&0);
-                let b_span = b_ips.iter().max().unwrap_or(&0) - b_ips.iter().min().unwrap_or(&0);
-                println!("  R{} ↔ R{}: overlap={} ips, spans=({},{}), samples=({},{})",
-                    i, j, overlap, a_span, b_span, a_total, b_total);
+    // Per-region: constant registers (potential magic numbers / state)
+    println!("\n═══ CONSTANT REGISTERS (magic numbers per region) ═══\n");
+    for rid in 0..n_regions {
+        let mut constants = Vec::new();
+        for &(idx, name) in &REG_NAMES {
+            if let Some(vals) = region_regs[rid].get(&idx) {
+                if vals.len() >= 10 {
+                    let mn = *vals.iter().min().unwrap();
+                    let mx = *vals.iter().max().unwrap();
+                    if mn == mx {
+                        constants.push((name, mn));
+                    }
+                }
             }
+        }
+        if !constants.is_empty() {
+            print!("  R{}: ", rid);
+            for (name, val) in &constants {
+                print!("{}=0x{:x} ", name, val);
+            }
+            println!();
         }
     }
 
     println!("\n═══ SUMMARY ═══");
-    println!("  samples: {}", ip_samples.len());
-    println!("  regions: {}", region_id);
-    println!("  transitions: {}", timeline.len());
+    println!("  samples: {} ({} with regs)", samples.len(), with_regs);
+    println!("  regions: {}", n_regions);
+    println!("  fingerprint groups: {}", fp_groups.len());
 
     Ok(())
 }
