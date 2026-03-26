@@ -150,6 +150,8 @@ pub fn witness_boundary(attr: TokenStream, item: TokenStream) -> TokenStream {
         quote! {}
     };
 
+    let enforce = attrs.enforce;
+
     let record_call = if has_perf {
         quote! {
             let __zkperf_perf1 = ::zkperf_witness::PerfReadings::sample();
@@ -166,8 +168,8 @@ pub fn witness_boundary(attr: TokenStream, item: TokenStream) -> TokenStream {
             );
         }
     } else {
-        quote! {
-            ::zkperf_witness::record(::zkperf_witness::Witness {
+        let witness_expr = quote! {
+            ::zkperf_witness::Witness {
                 context: #context,
                 signature: #sig_hash,
                 complexity: #complexity,
@@ -179,14 +181,33 @@ pub fn witness_boundary(attr: TokenStream, item: TokenStream) -> TokenStream {
                 platform: ::std::env::consts::OS,
                 perf: None,
                 violations: None,
-            });
+            }
+        };
+        if enforce {
+            quote! {
+                let __w = #witness_expr;
+                if let Err(__v) = ::zkperf_witness::record_enforced(__w) {
+                    panic!("perf contract violated: {} [{}] {}ms > {}ms",
+                        #context, #sig_hash, __v.witness.elapsed_ms, #max_ms);
+                }
+            }
+        } else {
+            quote! {
+                ::zkperf_witness::record(#witness_expr);
+            }
         }
+    };
+
+    // Register contract at function entry
+    let register = quote! {
+        ::zkperf_witness::register_contract(#context, #sig_hash, #complexity, #max_ms);
     };
 
     let is_async = sig.asyncness.is_some();
 
     let witness_block = if is_async {
         quote! {
+            #register
             #perf_constraints
             let __zkperf_t0 = ::std::time::Instant::now();
             let __zkperf_result = (async move { #body }).await;
@@ -196,6 +217,7 @@ pub fn witness_boundary(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
     } else {
         quote! {
+            #register
             #perf_constraints
             let __zkperf_t0 = ::std::time::Instant::now();
             let __zkperf_result = (|| #body)();
@@ -233,6 +255,7 @@ struct BoundaryAttrs {
     max_instructions: Option<u64>,
     max_cache_misses: Option<u64>,
     max_branch_misses: Option<u64>,
+    enforce: bool,
 }
 
 impl syn::parse::Parse for BoundaryAttrs {
@@ -246,6 +269,7 @@ impl syn::parse::Parse for BoundaryAttrs {
             max_instructions: None,
             max_cache_misses: None,
             max_branch_misses: None,
+            enforce: false,
         };
 
         while !input.is_empty() {
@@ -261,6 +285,7 @@ impl syn::parse::Parse for BoundaryAttrs {
                 "max_instructions" => { let v: LitInt = input.parse()?; attrs.max_instructions = Some(v.base10_parse()?); }
                 "max_cache_misses" => { let v: LitInt = input.parse()?; attrs.max_cache_misses = Some(v.base10_parse()?); }
                 "max_branch_misses" => { let v: LitInt = input.parse()?; attrs.max_branch_misses = Some(v.base10_parse()?); }
+                "enforce" => { let v: syn::LitBool = input.parse()?; attrs.enforce = v.value(); }
                 other => {
                     return Err(syn::Error::new(key.span(),
                         format!("unknown attribute `{other}`")));

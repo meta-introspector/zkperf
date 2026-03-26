@@ -192,6 +192,58 @@ impl Witness {
     }
 }
 
+/// Perf contract violation — raised when a witness_boundary constraint is broken.
+#[derive(Debug, Clone, Serialize)]
+pub struct PerfViolation {
+    pub witness: Witness,
+    pub commitment: String,
+}
+
+impl std::fmt::Display for PerfViolation {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "perf contract violated: {} [{}] {}ms > {}ms (commitment: {})",
+            self.witness.context, self.witness.signature,
+            self.witness.elapsed_ms, self.witness.max_ms, self.commitment)
+    }
+}
+
+impl std::error::Error for PerfViolation {}
+
+/// Record witness and enforce contract. Returns Err(PerfViolation) if violated.
+pub fn record_enforced(w: Witness) -> Result<Witness, PerfViolation> {
+    let commitment = w.commitment();
+    record(w.clone());
+    if w.violated {
+        let v = PerfViolation { witness: w, commitment };
+        // Also persist violation proof
+        let vdir = format!("{}/.zkperf/violations", dirs_fallback().display());
+        std::fs::create_dir_all(&vdir).ok();
+        let path = format!("{}/{}_{}.json", vdir, v.witness.signature, v.witness.timestamp);
+        std::fs::write(&path, serde_json::to_string_pretty(&v).unwrap()).ok();
+        Err(v)
+    } else {
+        Ok(w)
+    }
+}
+
+/// Global contract registry — tracks all registered perf signatures at runtime.
+static CONTRACTS: std::sync::Mutex<Vec<(&'static str, &'static str, &'static str, u64)>> =
+    std::sync::Mutex::new(Vec::new());
+
+/// Register a perf contract (called by witness_boundary at function entry).
+pub fn register_contract(context: &'static str, signature: &'static str, complexity: &'static str, max_ms: u64) {
+    if let Ok(mut c) = CONTRACTS.lock() {
+        if !c.iter().any(|(_, s, _, _)| *s == signature) {
+            c.push((context, signature, complexity, max_ms));
+        }
+    }
+}
+
+/// List all registered perf contracts.
+pub fn list_contracts() -> Vec<(&'static str, &'static str, &'static str, u64)> {
+    CONTRACTS.lock().map(|c| c.clone()).unwrap_or_default()
+}
+
 /// Current time in milliseconds since epoch.
 pub fn now_ms() -> u64 {
     std::time::SystemTime::now()
