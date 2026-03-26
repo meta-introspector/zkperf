@@ -1,3 +1,6 @@
 [submodule "linux-perf-data"]
 	path = linux-perf-data
 	url = https://github.com/meta-introspector/linux-perf-data.git
+[submodule "erdfa-publish"]
+	path = erdfa-publish
+	url = https://github.com/meta-introspector/erdfa-publish.git
