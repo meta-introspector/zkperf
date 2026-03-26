@@ -26,7 +26,11 @@ pub struct CacheEntry {
 
 impl CacheEntry {
     pub fn avg_ms(&self) -> u64 {
-        if self.count == 0 { 0 } else { self.total_ms / self.count }
+        if self.count == 0 {
+            0
+        } else {
+            self.total_ms / self.count
+        }
     }
 }
 
@@ -59,7 +63,9 @@ pub fn update(w: &Witness) -> Option<CacheEntry> {
     entry.min_ms = entry.min_ms.min(w.elapsed_ms);
     entry.max_elapsed_ms = entry.max_elapsed_ms.max(w.elapsed_ms);
     entry.total_ms += w.elapsed_ms;
-    if w.violated { entry.violation_count += 1; }
+    if w.violated {
+        entry.violation_count += 1;
+    }
     entry.last_timestamp = w.timestamp;
 
     save_entry(&path, &entry).ok()?;
@@ -74,7 +80,9 @@ pub fn lookup(signature: &str) -> Option<CacheEntry> {
 /// List all cached entries.
 pub fn list_all() -> Vec<CacheEntry> {
     let dir = cache_dir();
-    let Ok(rd) = std::fs::read_dir(&dir) else { return vec![] };
+    let Ok(rd) = std::fs::read_dir(&dir) else {
+        return vec![];
+    };
     rd.filter_map(|e| e.ok())
         .filter(|e| e.path().extension().map_or(false, |x| x == "json"))
         .filter_map(|e| load_entry(&e.path()))

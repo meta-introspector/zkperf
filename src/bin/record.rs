@@ -22,13 +22,19 @@ const PRIVATE_FIELDS: &[&str] = &["ip", "samples", "count", "pct", "cmdline", "s
 fn main() -> Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let private = args.iter().any(|a| a == "--private");
-    let args: Vec<&str> = args.iter().filter(|a| *a != "--private").map(|s| s.as_str()).collect();
+    let args: Vec<&str> = args
+        .iter()
+        .filter(|a| *a != "--private")
+        .map(|s| s.as_str())
+        .collect();
     if args.is_empty() {
         eprintln!("usage:");
         eprintln!("  zkperf-record [--private] run  <cmd> <out-dir>");
         eprintln!("  zkperf-record [--private] read <perf.data> <out-dir>");
         eprintln!("  zkperf-record agda <shard-dir> <out.agda> [module]");
-        eprintln!("\n  --private  commit side-channel values (Merkle tree), redact sensitive fields");
+        eprintln!(
+            "\n  --private  commit side-channel values (Merkle tree), redact sensitive fields"
+        );
         std::process::exit(1);
     }
     match args[0] {
@@ -46,11 +52,28 @@ fn main() -> Result<()> {
 fn cmd_run(cmd: &str, out_dir: &str, private: bool) -> Result<()> {
     let perf_data = format!("{}/perf.data", out_dir);
     fs::create_dir_all(out_dir)?;
-    eprintln!("recording{}: {}", if private { " (private)" } else { "" }, cmd);
+    eprintln!(
+        "recording{}: {}",
+        if private { " (private)" } else { "" },
+        cmd
+    );
     Command::new("perf")
-        .args(["record", "-g", "--call-graph", "dwarf,65528",
-               "-e", "cycles:u,instructions:u,cache-misses:u,branch-misses:u",
-               "-c", "100", "-o", &perf_data, "--", "sh", "-c", cmd])
+        .args([
+            "record",
+            "-g",
+            "--call-graph",
+            "dwarf,65528",
+            "-e",
+            "cycles:u,instructions:u,cache-misses:u,branch-misses:u",
+            "-c",
+            "100",
+            "-o",
+            &perf_data,
+            "--",
+            "sh",
+            "-c",
+            cmd,
+        ])
         .status()?;
     cmd_read(&perf_data, out_dir, private)
 }
@@ -60,15 +83,32 @@ fn cmd_read(perf_path: &str, out_dir: &str, private: bool) -> Result<()> {
     fs::create_dir_all(out_dir)?;
     let file = File::open(perf_path)?;
     let reader = BufReader::new(file);
-    let PerfFileReader { mut perf_file, mut record_iter } =
-        PerfFileReader::parse_file(reader)?;
+    let PerfFileReader {
+        mut perf_file,
+        mut record_iter,
+    } = PerfFileReader::parse_file(reader)?;
 
     // Metadata
-    let arch = perf_file.arch().ok().flatten().unwrap_or_default().to_string();
-    let cmdline = perf_file.cmdline().ok().flatten()
-        .map(|v| v.iter().map(|s| s.to_string()).collect::<Vec<_>>().join(" "))
+    let arch = perf_file
+        .arch()
+        .ok()
+        .flatten()
+        .unwrap_or_default()
+        .to_string();
+    let cmdline = perf_file
+        .cmdline()
+        .ok()
+        .flatten()
+        .map(|v| {
+            v.iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>()
+                .join(" ")
+        })
         .unwrap_or_default();
-    let events: Vec<String> = perf_file.event_attributes().iter()
+    let events: Vec<String> = perf_file
+        .event_attributes()
+        .iter()
         .filter_map(|a| a.name().map(|s| s.to_string()))
         .collect();
 
@@ -86,8 +126,14 @@ fn cmd_read(perf_path: &str, out_dir: &str, private: bool) -> Result<()> {
             *event_counts.entry(event_name.clone()).or_insert(0) += 1;
 
             // Timestamp
-            let ts = record.common_data().ok().and_then(|cd| cd.timestamp).unwrap_or(0);
-            if ts > 0 { timestamps.push(ts); }
+            let ts = record
+                .common_data()
+                .ok()
+                .and_then(|cd| cd.timestamp)
+                .unwrap_or(0);
+            if ts > 0 {
+                timestamps.push(ts);
+            }
 
             // Parse the record for IP, pid, tid
             if let Ok(parsed) = record.parse() {
@@ -98,11 +144,16 @@ fn cmd_read(perf_path: &str, out_dir: &str, private: bool) -> Result<()> {
                 let debug = format!("{:?}", parsed);
                 if let Some(pos) = debug.find("ip: ") {
                     let rest = &debug[pos + 4..];
-                    let end = rest.find(|c: char| !c.is_ascii_hexdigit() && c != 'x')
+                    let end = rest
+                        .find(|c: char| !c.is_ascii_hexdigit() && c != 'x')
                         .unwrap_or(rest.len());
                     if let Ok(ip) = u64::from_str_radix(rest[..end].trim_start_matches("0x"), 16) {
                         *ip_counts.entry(ip).or_insert(0) += 1;
-                        samples.push(SampleRecord { ts, ip, event: event_name });
+                        samples.push(SampleRecord {
+                            ts,
+                            ip,
+                            event: event_name,
+                        });
                     }
                 }
             }
@@ -113,7 +164,7 @@ fn cmd_read(perf_path: &str, out_dir: &str, private: bool) -> Result<()> {
 
     // 1. Summary shard with metadata
     let commitment = hex::encode(Sha256::digest(
-        format!("{}:{}:{}", perf_path, total, ip_counts.len()).as_bytes()
+        format!("{}:{}:{}", perf_path, total, ip_counts.len()).as_bytes(),
     ));
     let summary_pairs = vec![
         ("source".into(), perf_path.into()),
@@ -125,7 +176,13 @@ fn cmd_read(perf_path: &str, out_dir: &str, private: bool) -> Result<()> {
         ("unique_ips".into(), ip_counts.len().to_string()),
         ("commitment".into(), commitment),
     ];
-    write_shard_privacy(out_dir, "summary", summary_pairs, vec!["perf", "da51", "summary"], private)?;
+    write_shard_privacy(
+        out_dir,
+        "summary",
+        summary_pairs,
+        vec!["perf", "da51", "summary"],
+        private,
+    )?;
 
     // 2. Event count shards
     for (event, count) in &event_counts {
@@ -145,9 +202,18 @@ fn cmd_read(perf_path: &str, out_dir: &str, private: bool) -> Result<()> {
             ("rank".into(), i.to_string()),
             ("record_type".into(), sym.to_string()),
             ("samples".into(), count.to_string()),
-            ("pct".into(), format!("{:.4}", **count as f64 / total.max(1) as f64 * 100.0)),
+            (
+                "pct".into(),
+                format!("{:.4}", **count as f64 / total.max(1) as f64 * 100.0),
+            ),
         ];
-        write_shard_privacy(out_dir, &format!("func_{}", i), pairs, vec!["perf", "da51", "function"], private)?;
+        write_shard_privacy(
+            out_dir,
+            &format!("func_{}", i),
+            pairs,
+            vec!["perf", "da51", "function"],
+            private,
+        )?;
     }
 
     // 4. Instruction address shards (top 200)
@@ -159,21 +225,48 @@ fn cmd_read(perf_path: &str, out_dir: &str, private: bool) -> Result<()> {
             ("ip".into(), format!("0x{:x}", ip)),
             ("samples".into(), count.to_string()),
         ];
-        write_shard_privacy(out_dir, &format!("instr_{}", i), pairs, vec!["perf", "da51", "instruction"], private)?;
+        write_shard_privacy(
+            out_dir,
+            &format!("instr_{}", i),
+            pairs,
+            vec!["perf", "da51", "instruction"],
+            private,
+        )?;
     }
 
     // 5. Timestamp trace shard (raw sample stream, first 10000)
-    let trace_pairs: Vec<(String, String)> = samples.iter().take(10000).enumerate()
+    let trace_pairs: Vec<(String, String)> = samples
+        .iter()
+        .take(10000)
+        .enumerate()
         .map(|(i, s)| (i.to_string(), format!("{}:0x{:x}:{}", s.ts, s.ip, s.event)))
         .collect();
     if !trace_pairs.is_empty() {
-        write_shard_privacy(out_dir, "trace", trace_pairs, vec!["perf", "da51", "trace"], private)?;
+        write_shard_privacy(
+            out_dir,
+            "trace",
+            trace_pairs,
+            vec!["perf", "da51", "trace"],
+            private,
+        )?;
     }
 
     let n_shards = 1 + event_counts.len() + ranked_funcs.len() + ranked_ips.len().min(200) + 1;
-    let mode = if private { " (PRIVATE — sensitive fields redacted)" } else { "" };
-    eprintln!("{}: {} samples, {} functions, {} IPs, {} events → {} DA51 shards{}",
-        perf_path, total, func_counts.len(), ip_counts.len(), event_counts.len(), n_shards, mode);
+    let mode = if private {
+        " (PRIVATE — sensitive fields redacted)"
+    } else {
+        ""
+    };
+    eprintln!(
+        "{}: {} samples, {} functions, {} IPs, {} events → {} DA51 shards{}",
+        perf_path,
+        total,
+        func_counts.len(),
+        ip_counts.len(),
+        event_counts.len(),
+        n_shards,
+        mode
+    );
     Ok(())
 }
 
@@ -187,7 +280,13 @@ fn write_shard(dir: &str, id: &str, pairs: Vec<(String, String)>, tags: Vec<&str
     write_shard_privacy(dir, id, pairs, tags, false)
 }
 
-fn write_shard_privacy(dir: &str, id: &str, pairs: Vec<(String, String)>, tags: Vec<&str>, private: bool) -> Result<()> {
+fn write_shard_privacy(
+    dir: &str,
+    id: &str,
+    pairs: Vec<(String, String)>,
+    tags: Vec<&str>,
+    private: bool,
+) -> Result<()> {
     let tag_strings: Vec<String> = tags.into_iter().map(|s| s.to_string()).collect();
     if private {
         use erdfa_publish::privacy::PrivacyShard;
@@ -195,8 +294,7 @@ fn write_shard_privacy(dir: &str, id: &str, pairs: Vec<(String, String)>, tags: 
         ps.redact(&PRIVATE_FIELDS);
         fs::write(format!("{}/{}.priv.cbor", dir, id), ps.to_cbor())?;
     } else {
-        let shard = Shard::new(id, Component::KeyValue { pairs })
-            .with_tags(tag_strings);
+        let shard = Shard::new(id, Component::KeyValue { pairs }).with_tags(tag_strings);
         fs::write(format!("{}/{}.cbor", dir, id), shard.to_cbor())?;
     }
     Ok(())
@@ -215,13 +313,24 @@ fn cmd_agda(shard_dir: &str, out_path: &str, module: &str) -> Result<()> {
          open import Agda.Builtin.String\nopen import Agda.Builtin.Bool\n\n\
          data CborVal : Set where\n  cnat  : Nat → CborVal\n  ctext : String → CborVal\n\
          cpair : String → CborVal → CborVal\n  clist : List CborVal → CborVal\n\
-         ctag  : Nat → CborVal → CborVal\n\n", shard_dir, module);
+         ctag  : Nat → CborVal → CborVal\n\n",
+        shard_dir, module
+    );
 
     for (i, path) in shards.iter().enumerate() {
         let raw = fs::read(path)?;
-        let data = if raw.len() > 2 && raw[0] == 0xda && raw[1] == 0x51 { &raw[2..] } else { &raw };
+        let data = if raw.len() > 2 && raw[0] == 0xda && raw[1] == 0x51 {
+            &raw[2..]
+        } else {
+            &raw
+        };
         if let Ok(val) = ciborium::from_reader::<ciborium::Value, _>(data) {
-            agda.push_str(&format!("shard-{} : CborVal\nshard-{} = {}\n\n", i, i, cbor_to_agda(&val)));
+            agda.push_str(&format!(
+                "shard-{} : CborVal\nshard-{} = {}\n\n",
+                i,
+                i,
+                cbor_to_agda(&val)
+            ));
         }
     }
 
@@ -230,7 +339,11 @@ fn cmd_agda(shard_dir: &str, out_path: &str, module: &str) -> Result<()> {
         agda.push_str(if i == 0 { "  " } else { "  ∷ " });
         agda.push_str(&format!("shard-{}\n", i));
     }
-    agda.push_str(if shards.is_empty() { "  []\n" } else { "  ∷ []\n" });
+    agda.push_str(if shards.is_empty() {
+        "  []\n"
+    } else {
+        "  ∷ []\n"
+    });
 
     fs::write(out_path, &agda)?;
     eprintln!("wrote {} ({} shards)", out_path, shards.len());
@@ -240,8 +353,14 @@ fn cmd_agda(shard_dir: &str, out_path: &str, module: &str) -> Result<()> {
 fn cbor_to_agda(val: &ciborium::Value) -> String {
     use ciborium::Value::*;
     match val {
-        Integer(n) => { let n: i128 = (*n).into(); format!("(cnat {})", n.max(0)) }
-        Text(s) => format!("(ctext \"{}\")", s.replace('\\', "\\\\").replace('"', "\\\"")),
+        Integer(n) => {
+            let n: i128 = (*n).into();
+            format!("(cnat {})", n.max(0))
+        }
+        Text(s) => format!(
+            "(ctext \"{}\")",
+            s.replace('\\', "\\\\").replace('"', "\\\"")
+        ),
         Array(xs) if xs.is_empty() => "(clist [])".into(),
         Array(xs) => {
             let items: Vec<String> = xs.iter().map(cbor_to_agda).collect();
@@ -249,10 +368,16 @@ fn cbor_to_agda(val: &ciborium::Value) -> String {
         }
         Map(kvs) if kvs.is_empty() => "(clist [])".into(),
         Map(kvs) => {
-            let items: Vec<String> = kvs.iter().map(|(k, v)| {
-                let key = match k { Text(s) => s.clone(), _ => format!("{:?}", k) };
-                format!("(cpair \"{}\" {})", key, cbor_to_agda(v))
-            }).collect();
+            let items: Vec<String> = kvs
+                .iter()
+                .map(|(k, v)| {
+                    let key = match k {
+                        Text(s) => s.clone(),
+                        _ => format!("{:?}", k),
+                    };
+                    format!("(cpair \"{}\" {})", key, cbor_to_agda(v))
+                })
+                .collect();
             format!("(clist ({} ∷ []))", items.join(" ∷ "))
         }
         Tag(t, inner) => format!("(ctag {} {})", t, cbor_to_agda(inner)),

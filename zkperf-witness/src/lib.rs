@@ -48,10 +48,10 @@ impl PerfReadings {
         #[cfg(target_os = "linux")]
         {
             Self {
-                cycles: read_perf_counter(0, 0),        // PERF_COUNT_HW_CPU_CYCLES
-                instructions: read_perf_counter(0, 1),   // PERF_COUNT_HW_INSTRUCTIONS
-                cache_misses: read_perf_counter(0, 3),   // PERF_COUNT_HW_CACHE_MISSES
-                branch_misses: read_perf_counter(0, 5),  // PERF_COUNT_HW_BRANCH_MISSES
+                cycles: read_perf_counter(0, 0),           // PERF_COUNT_HW_CPU_CYCLES
+                instructions: read_perf_counter(0, 1),     // PERF_COUNT_HW_INSTRUCTIONS
+                cache_misses: read_perf_counter(0, 3),     // PERF_COUNT_HW_CACHE_MISSES
+                branch_misses: read_perf_counter(0, 5),    // PERF_COUNT_HW_BRANCH_MISSES
                 context_switches: read_perf_counter(1, 3), // PERF_COUNT_SW_CONTEXT_SWITCHES
             }
         }
@@ -106,13 +106,15 @@ fn read_perf_counter(type_: u32, config: u64) -> Option<u64> {
         libc::syscall(
             libc::SYS_perf_event_open,
             &attr as *const _ as usize,
-            0i32,   // pid = this thread
-            -1i32,  // cpu = any
-            -1i32,  // group_fd = none
-            0u64,   // flags
+            0i32,  // pid = this thread
+            -1i32, // cpu = any
+            -1i32, // group_fd = none
+            0u64,  // flags
         )
     };
-    if fd < 0 { return None; }
+    if fd < 0 {
+        return None;
+    }
 
     let mut file = unsafe { std::fs::File::from_raw_fd(fd as i32) };
     let mut buf = [0u8; 8];
@@ -133,19 +135,30 @@ pub struct Violations {
 
 impl Violations {
     pub fn any(&self) -> bool {
-        self.time_exceeded || self.cycles_exceeded || self.instructions_exceeded
-            || self.cache_misses_exceeded || self.branch_misses_exceeded
+        self.time_exceeded
+            || self.cycles_exceeded
+            || self.instructions_exceeded
+            || self.cache_misses_exceeded
+            || self.branch_misses_exceeded
             || self.context_switches_exceeded
     }
 
-    pub fn check(constraints: &PerfConstraints, readings: &PerfReadings, elapsed_ms: u64, max_ms: u64) -> Self {
+    pub fn check(
+        constraints: &PerfConstraints,
+        readings: &PerfReadings,
+        elapsed_ms: u64,
+        max_ms: u64,
+    ) -> Self {
         Self {
             time_exceeded: elapsed_ms > max_ms,
             cycles_exceeded: exceeds(readings.cycles, constraints.max_cycles),
             instructions_exceeded: exceeds(readings.instructions, constraints.max_instructions),
             cache_misses_exceeded: exceeds(readings.cache_misses, constraints.max_cache_misses),
             branch_misses_exceeded: exceeds(readings.branch_misses, constraints.max_branch_misses),
-            context_switches_exceeded: exceeds(readings.context_switches, constraints.max_context_switches),
+            context_switches_exceeded: exceeds(
+                readings.context_switches,
+                constraints.max_context_switches,
+            ),
         }
     }
 }
@@ -185,8 +198,12 @@ impl Witness {
         h.update(b"|");
         h.update(self.timestamp.to_string().as_bytes());
         if let Some(ref p) = self.perf {
-            if let Some(c) = p.cycles { h.update(c.to_string().as_bytes()); }
-            if let Some(i) = p.instructions { h.update(i.to_string().as_bytes()); }
+            if let Some(c) = p.cycles {
+                h.update(c.to_string().as_bytes());
+            }
+            if let Some(i) = p.instructions {
+                h.update(i.to_string().as_bytes());
+            }
         }
         hex::encode(h.finalize())
     }
@@ -201,9 +218,15 @@ pub struct PerfViolation {
 
 impl std::fmt::Display for PerfViolation {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "perf contract violated: {} [{}] {}ms > {}ms (commitment: {})",
-            self.witness.context, self.witness.signature,
-            self.witness.elapsed_ms, self.witness.max_ms, self.commitment)
+        write!(
+            f,
+            "perf contract violated: {} [{}] {}ms > {}ms (commitment: {})",
+            self.witness.context,
+            self.witness.signature,
+            self.witness.elapsed_ms,
+            self.witness.max_ms,
+            self.commitment
+        )
     }
 }
 
@@ -214,10 +237,16 @@ pub fn record_enforced(w: Witness) -> Result<Witness, PerfViolation> {
     let commitment = w.commitment();
     record(w.clone());
     if w.violated {
-        let v = PerfViolation { witness: w, commitment };
+        let v = PerfViolation {
+            witness: w,
+            commitment,
+        };
         let vdir = format!("{}/.zkperf/violations", dirs_fallback().display());
         std::fs::create_dir_all(&vdir).ok();
-        let path = format!("{}/{}_{}.json", vdir, v.witness.signature, v.witness.timestamp);
+        let path = format!(
+            "{}/{}_{}.json",
+            vdir, v.witness.signature, v.witness.timestamp
+        );
         std::fs::write(&path, serde_json::to_string_pretty(&v).unwrap()).ok();
         // Jump to unified violation handler
         on_violation(ViolationSource::Userspace);
@@ -232,7 +261,12 @@ static CONTRACTS: std::sync::Mutex<Vec<(&'static str, &'static str, &'static str
     std::sync::Mutex::new(Vec::new());
 
 /// Register a perf contract (called by witness_boundary at function entry).
-pub fn register_contract(context: &'static str, signature: &'static str, complexity: &'static str, max_ms: u64) {
+pub fn register_contract(
+    context: &'static str,
+    signature: &'static str,
+    complexity: &'static str,
+    max_ms: u64,
+) {
     if let Ok(mut c) = CONTRACTS.lock() {
         if !c.iter().any(|(_, s, _, _)| *s == signature) {
             c.push((context, signature, complexity, max_ms));
@@ -244,7 +278,6 @@ pub fn register_contract(context: &'static str, signature: &'static str, complex
 pub fn list_contracts() -> Vec<(&'static str, &'static str, &'static str, u64)> {
     CONTRACTS.lock().map(|c| c.clone()).unwrap_or_default()
 }
-
 
 // ============================================================================
 // Violation Handler — unified landing pad for kernel (SIGXCPU) and userspace
@@ -304,15 +337,20 @@ pub fn on_violation(source: ViolationSource) {
 
     // Record the violation as a witness
     let w = Witness {
-        context: match source { ViolationSource::Kernel => "kernel-ebpf", ViolationSource::Userspace => "userspace-enforce" },
+        context: match source {
+            ViolationSource::Kernel => "kernel-ebpf",
+            ViolationSource::Userspace => "userspace-enforce",
+        },
         signature: "violation-handler",
         complexity: "N/A",
-        max_n: 0, max_ms: 0,
+        max_n: 0,
+        max_ms: 0,
         elapsed_ms: 0,
         violated: true,
         timestamp: now_ms(),
         platform: std::env::consts::OS,
-        perf: None, violations: None,
+        perf: None,
+        violations: None,
     };
     record(w);
 
@@ -376,7 +414,11 @@ pub fn record_with_perf(
         timestamp: now_ms(),
         platform: std::env::consts::OS,
         perf: Some(readings.clone()),
-        violations: if violated { Some(violations.clone()) } else { None },
+        violations: if violated {
+            Some(violations.clone())
+        } else {
+            None
+        },
     };
 
     let _ = record_inner(&w);
@@ -386,21 +428,36 @@ pub fn record_with_perf(
     let _ = save_proof(&w, &proof);
 
     if violated {
-        eprintln!("zkperf: VIOLATION {context} sig={sig}", sig = &signature[..16]);
+        eprintln!(
+            "zkperf: VIOLATION {context} sig={sig}",
+            sig = &signature[..16]
+        );
         if violations.time_exceeded {
             eprintln!("  time: {elapsed_ms}ms > {max_ms}ms");
         }
         if violations.cycles_exceeded {
-            eprintln!("  cycles: {:?} > {:?}", readings.cycles, constraints.max_cycles);
+            eprintln!(
+                "  cycles: {:?} > {:?}",
+                readings.cycles, constraints.max_cycles
+            );
         }
         if violations.instructions_exceeded {
-            eprintln!("  instructions: {:?} > {:?}", readings.instructions, constraints.max_instructions);
+            eprintln!(
+                "  instructions: {:?} > {:?}",
+                readings.instructions, constraints.max_instructions
+            );
         }
         if violations.cache_misses_exceeded {
-            eprintln!("  cache-misses: {:?} > {:?}", readings.cache_misses, constraints.max_cache_misses);
+            eprintln!(
+                "  cache-misses: {:?} > {:?}",
+                readings.cache_misses, constraints.max_cache_misses
+            );
         }
         if violations.branch_misses_exceeded {
-            eprintln!("  branch-misses: {:?} > {:?}", readings.branch_misses, constraints.max_branch_misses);
+            eprintln!(
+                "  branch-misses: {:?} > {:?}",
+                readings.branch_misses, constraints.max_branch_misses
+            );
         }
     }
 }
@@ -427,7 +484,8 @@ fn record_inner(w: &Witness) -> std::io::Result<()> {
     std::fs::create_dir_all(&dir)?;
     let filename = format!("{}_{}.witness.json", w.timestamp, w.context);
     let path = dir.join(filename);
-    let json = serde_json::to_string(w).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+    let json =
+        serde_json::to_string(w).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
     std::fs::write(path, json)?;
     // Update cache stats
     cache::update(w);
@@ -442,7 +500,6 @@ fn save_proof(w: &Witness, proof: &zkp::WitnessProof) -> std::io::Result<()> {
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
     std::fs::write(dir.join(filename), json)
 }
-
 
 /// Instrument an arbitrary code block with zkperf timing + witness.
 ///
@@ -538,8 +595,16 @@ mod tests {
 
     #[test]
     fn perf_delta() {
-        let before = PerfReadings { cycles: Some(100), instructions: Some(50), ..Default::default() };
-        let after = PerfReadings { cycles: Some(350), instructions: Some(200), ..Default::default() };
+        let before = PerfReadings {
+            cycles: Some(100),
+            instructions: Some(50),
+            ..Default::default()
+        };
+        let after = PerfReadings {
+            cycles: Some(350),
+            instructions: Some(200),
+            ..Default::default()
+        };
         let d = after.delta(&before);
         assert_eq!(d.cycles, Some(250));
         assert_eq!(d.instructions, Some(150));

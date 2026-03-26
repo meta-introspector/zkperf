@@ -10,7 +10,9 @@ fn main() {
     let t0 = Instant::now();
 
     // Gather build metadata
-    let rustc_ver = Command::new("rustc").arg("--version").output()
+    let rustc_ver = Command::new("rustc")
+        .arg("--version")
+        .output()
         .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
         .unwrap_or_else(|_| "unknown".into());
 
@@ -30,9 +32,17 @@ fn main() {
     // Build witness JSON
     let witness = format!(
         r#"{{"event":"build","rustc":"{}","target":"{}","profile":"{}","host":"{}","jobs":{},"crates":{},"build_rs_ms":{},"timestamp":{}}}"#,
-        rustc_ver, target, profile, host, num_jobs, crate_count, elapsed_ms,
+        rustc_ver,
+        target,
+        profile,
+        host,
+        num_jobs,
+        crate_count,
+        elapsed_ms,
         std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs()
     );
 
     // Write witness

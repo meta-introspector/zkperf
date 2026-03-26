@@ -55,21 +55,33 @@ async fn main() {
     for entry in zkperf_witness::cache::list_all() {
         println!(
             "  {} count={} avg={}ms min={}ms max={}ms violations={}",
-            entry.context, entry.count, entry.avg_ms(),
-            entry.min_ms, entry.max_elapsed_ms, entry.violation_count,
+            entry.context,
+            entry.count,
+            entry.avg_ms(),
+            entry.min_ms,
+            entry.max_elapsed_ms,
+            entry.violation_count,
         );
     }
 
     // --- Share ---
     println!("\n=== SHARE ===");
     let bundle = zkperf_witness::share::bundle_all("demo-node").unwrap();
-    println!("  bundle: {} witnesses, merkle_root={}", bundle.witnesses.len(), &bundle.merkle_root[..16]);
+    println!(
+        "  bundle: {} witnesses, merkle_root={}",
+        bundle.witnesses.len(),
+        &bundle.merkle_root[..16]
+    );
     println!("  verified: {}", bundle.verify());
 
     let tmp = std::env::temp_dir().join("zkperf-demo-bundle.json");
     bundle.save(&tmp).unwrap();
     let loaded = zkperf_witness::share::WitnessBundle::load(&tmp).unwrap();
-    println!("  round-trip: {} witnesses, verified={}", loaded.witnesses.len(), loaded.verify());
+    println!(
+        "  round-trip: {} witnesses, verified={}",
+        loaded.witnesses.len(),
+        loaded.verify()
+    );
 
     // --- ZKP ---
     println!("\n=== ZKP ===");
@@ -78,10 +90,17 @@ async fn main() {
         for entry in rd.filter_map(|e| e.ok()).take(3) {
             let data = std::fs::read_to_string(entry.path()).unwrap();
             let proof: zkperf_witness::zkp::WitnessProof = serde_json::from_str(&data).unwrap();
-            let name = entry.path().file_name().unwrap().to_string_lossy().to_string();
+            let name = entry
+                .path()
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .to_string();
             println!(
                 "  {} satisfied={} ranges={} verified={}",
-                name, proof.satisfied, proof.range_proofs.len(),
+                name,
+                proof.satisfied,
+                proof.range_proofs.len(),
                 zkperf_witness::zkp::verify(&proof),
             );
         }

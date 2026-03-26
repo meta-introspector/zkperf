@@ -23,7 +23,10 @@ fn main() -> Result<()> {
     }
     match args[0].as_str() {
         "schema" => {
-            let dir = args.get(1).map(|s| s.as_str()).unwrap_or("/tmp/perf_schema");
+            let dir = args
+                .get(1)
+                .map(|s| s.as_str())
+                .unwrap_or("/tmp/perf_schema");
             cmd_schema(dir)?;
         }
         "extract" => cmd_extract(&args[1], &args[2])?,
@@ -39,65 +42,117 @@ fn cmd_schema(out_dir: &str) -> Result<()> {
     // Schema: each type is a shard with its fields as key-value pairs
     // This is the DA51 reflection of linux-perf-data's own structure
     let types: Vec<(&str, Vec<(&str, &str)>)> = vec![
-        ("SampleRecord", vec![
-            ("ip", "Option<u64>"), ("timestamp", "Option<u64>"),
-            ("pid", "Option<i32>"), ("tid", "Option<i32>"),
-            ("cpu", "Option<u32>"), ("period", "Option<u64>"),
-            ("addr", "Option<u64>"), ("phys_addr", "Option<u64>"),
-            ("user_regs", "Option<Regs>"), ("intr_regs", "Option<Regs>"),
-            ("callchain", "Option<RawDataU64>"),
-            ("user_stack", "Option<(RawData, u64)>"),
-            ("data_page_size", "Option<u64>"), ("code_page_size", "Option<u64>"),
-            ("cpu_mode", "CpuMode"),
-        ]),
-        ("EventRecord", vec![
-            ("Sample", "SampleRecord"), ("Mmap", "MmapRecord"),
-            ("Mmap2", "Mmap2Record"), ("Comm", "CommOrExecRecord"),
-            ("Exit", "ForkOrExitRecord"), ("Fork", "ForkOrExitRecord"),
-            ("Lost", "LostRecord"), ("Throttle", "ThrottleRecord"),
-            ("ContextSwitch", "ContextSwitchRecord"),
-        ]),
-        ("CommonData", vec![
-            ("pid", "Option<i32>"), ("tid", "Option<i32>"),
-            ("timestamp", "Option<u64>"), ("cpu", "Option<u32>"),
-        ]),
-        ("MmapRecord", vec![
-            ("pid", "i32"), ("tid", "i32"),
-            ("address", "u64"), ("length", "u64"),
-            ("page_offset", "u64"), ("path", "&[u8]"),
-            ("cpu_mode", "CpuMode"),
-        ]),
-        ("Mmap2Record", vec![
-            ("pid", "i32"), ("tid", "i32"),
-            ("address", "u64"), ("length", "u64"),
-            ("page_offset", "u64"), ("path", "&[u8]"),
-            ("file_id", "Mmap2FileId"), ("cpu_mode", "CpuMode"),
-        ]),
-        ("ForkOrExitRecord", vec![
-            ("pid", "i32"), ("ppid", "i32"),
-            ("tid", "i32"), ("ptid", "i32"),
-            ("timestamp", "u64"),
-        ]),
-        ("LostRecord", vec![
-            ("id", "u64"), ("count", "u64"),
-        ]),
-        ("PerfEventAttr", vec![
-            ("type_", "u32"), ("size", "u32"),
-            ("config", "u64"), ("sample_format", "SampleFormat"),
-            ("read_format", "ReadFormat"), ("flags", "AttrFlags"),
-        ]),
-        ("AttributeDescription", vec![
-            ("attr", "PerfEventAttr"), ("name", "Option<String>"),
-            ("event_ids", "Vec<u64>"),
-        ]),
-        ("PerfHeader", vec![
-            ("data_offset", "u64"), ("data_size", "u64"),
-            ("attr_size", "u64"),
-        ]),
+        (
+            "SampleRecord",
+            vec![
+                ("ip", "Option<u64>"),
+                ("timestamp", "Option<u64>"),
+                ("pid", "Option<i32>"),
+                ("tid", "Option<i32>"),
+                ("cpu", "Option<u32>"),
+                ("period", "Option<u64>"),
+                ("addr", "Option<u64>"),
+                ("phys_addr", "Option<u64>"),
+                ("user_regs", "Option<Regs>"),
+                ("intr_regs", "Option<Regs>"),
+                ("callchain", "Option<RawDataU64>"),
+                ("user_stack", "Option<(RawData, u64)>"),
+                ("data_page_size", "Option<u64>"),
+                ("code_page_size", "Option<u64>"),
+                ("cpu_mode", "CpuMode"),
+            ],
+        ),
+        (
+            "EventRecord",
+            vec![
+                ("Sample", "SampleRecord"),
+                ("Mmap", "MmapRecord"),
+                ("Mmap2", "Mmap2Record"),
+                ("Comm", "CommOrExecRecord"),
+                ("Exit", "ForkOrExitRecord"),
+                ("Fork", "ForkOrExitRecord"),
+                ("Lost", "LostRecord"),
+                ("Throttle", "ThrottleRecord"),
+                ("ContextSwitch", "ContextSwitchRecord"),
+            ],
+        ),
+        (
+            "CommonData",
+            vec![
+                ("pid", "Option<i32>"),
+                ("tid", "Option<i32>"),
+                ("timestamp", "Option<u64>"),
+                ("cpu", "Option<u32>"),
+            ],
+        ),
+        (
+            "MmapRecord",
+            vec![
+                ("pid", "i32"),
+                ("tid", "i32"),
+                ("address", "u64"),
+                ("length", "u64"),
+                ("page_offset", "u64"),
+                ("path", "&[u8]"),
+                ("cpu_mode", "CpuMode"),
+            ],
+        ),
+        (
+            "Mmap2Record",
+            vec![
+                ("pid", "i32"),
+                ("tid", "i32"),
+                ("address", "u64"),
+                ("length", "u64"),
+                ("page_offset", "u64"),
+                ("path", "&[u8]"),
+                ("file_id", "Mmap2FileId"),
+                ("cpu_mode", "CpuMode"),
+            ],
+        ),
+        (
+            "ForkOrExitRecord",
+            vec![
+                ("pid", "i32"),
+                ("ppid", "i32"),
+                ("tid", "i32"),
+                ("ptid", "i32"),
+                ("timestamp", "u64"),
+            ],
+        ),
+        ("LostRecord", vec![("id", "u64"), ("count", "u64")]),
+        (
+            "PerfEventAttr",
+            vec![
+                ("type_", "u32"),
+                ("size", "u32"),
+                ("config", "u64"),
+                ("sample_format", "SampleFormat"),
+                ("read_format", "ReadFormat"),
+                ("flags", "AttrFlags"),
+            ],
+        ),
+        (
+            "AttributeDescription",
+            vec![
+                ("attr", "PerfEventAttr"),
+                ("name", "Option<String>"),
+                ("event_ids", "Vec<u64>"),
+            ],
+        ),
+        (
+            "PerfHeader",
+            vec![
+                ("data_offset", "u64"),
+                ("data_size", "u64"),
+                ("attr_size", "u64"),
+            ],
+        ),
     ];
 
     for (name, fields) in &types {
-        let pairs: Vec<(String, String)> = fields.iter()
+        let pairs: Vec<(String, String)> = fields
+            .iter()
             .map(|(f, t)| (f.to_string(), t.to_string()))
             .collect();
         let hash = hex::encode(Sha256::digest(format!("{:?}", pairs).as_bytes()));
@@ -110,7 +165,13 @@ fn cmd_schema(out_dir: &str) -> Result<()> {
         let shard = Shard::new(
             format!("schema_{}", name),
             Component::KeyValue { pairs: all_pairs },
-        ).with_tags(vec!["da51".into(), "schema".into(), "perf".into(), name.to_string()]);
+        )
+        .with_tags(vec![
+            "da51".into(),
+            "schema".into(),
+            "perf".into(),
+            name.to_string(),
+        ]);
         fs::write(format!("{}/schema_{}.cbor", out_dir, name), shard.to_cbor())?;
     }
 
@@ -124,10 +185,14 @@ fn cmd_extract(perf_path: &str, out_dir: &str) -> Result<()> {
 
     let file = File::open(perf_path)?;
     let reader = BufReader::new(file);
-    let PerfFileReader { mut perf_file, mut record_iter } =
-        PerfFileReader::parse_file(reader)?;
+    let PerfFileReader {
+        mut perf_file,
+        mut record_iter,
+    } = PerfFileReader::parse_file(reader)?;
 
-    let events: Vec<String> = perf_file.event_attributes().iter()
+    let events: Vec<String> = perf_file
+        .event_attributes()
+        .iter()
         .filter_map(AttributeDescription::name)
         .map(|s| s.to_string())
         .collect();
@@ -151,31 +216,48 @@ fn cmd_extract(perf_path: &str, out_dir: &str) -> Result<()> {
                 let (id, pairs, tags) = match &debug {
                     s if s.starts_with("Sample") => {
                         sample_idx += 1;
-                        let pairs = extract_fields(&debug, &[
-                            "ip", "timestamp", "pid", "tid", "cpu", "period",
-                            "addr", "phys_addr", "cpu_mode",
-                        ]);
+                        let pairs = extract_fields(
+                            &debug,
+                            &[
+                                "ip",
+                                "timestamp",
+                                "pid",
+                                "tid",
+                                "cpu",
+                                "period",
+                                "addr",
+                                "phys_addr",
+                                "cpu_mode",
+                            ],
+                        );
                         let mut p = vec![
                             ("_type".into(), "SampleRecord".into()),
                             ("_event".into(), event_name.clone()),
                             ("_idx".into(), sample_idx.to_string()),
                         ];
                         p.extend(pairs);
-                        (format!("sample_{}", sample_idx), p,
-                         vec!["da51", "instance", "perf", "SampleRecord"])
+                        (
+                            format!("sample_{}", sample_idx),
+                            p,
+                            vec!["da51", "instance", "perf", "SampleRecord"],
+                        )
                     }
                     s if s.starts_with("Mmap") => {
                         mmap_idx += 1;
-                        let pairs = extract_fields(&debug, &[
-                            "pid", "tid", "address", "length", "page_offset", "path",
-                        ]);
+                        let pairs = extract_fields(
+                            &debug,
+                            &["pid", "tid", "address", "length", "page_offset", "path"],
+                        );
                         let mut p = vec![
                             ("_type".into(), "MmapRecord".into()),
                             ("_idx".into(), mmap_idx.to_string()),
                         ];
                         p.extend(pairs);
-                        (format!("mmap_{}", mmap_idx), p,
-                         vec!["da51", "instance", "perf", "MmapRecord"])
+                        (
+                            format!("mmap_{}", mmap_idx),
+                            p,
+                            vec!["da51", "instance", "perf", "MmapRecord"],
+                        )
                     }
                     _ => {
                         other_idx += 1;
@@ -184,8 +266,11 @@ fn cmd_extract(perf_path: &str, out_dir: &str) -> Result<()> {
                             ("_idx".into(), other_idx.to_string()),
                             ("_debug".into(), debug.chars().take(200).collect()),
                         ];
-                        (format!("other_{}", other_idx), p,
-                         vec!["da51", "instance", "perf", &record_type])
+                        (
+                            format!("other_{}", other_idx),
+                            p,
+                            vec!["da51", "instance", "perf", &record_type],
+                        )
                     }
                 };
 
@@ -196,8 +281,10 @@ fn cmd_extract(perf_path: &str, out_dir: &str) -> Result<()> {
         }
     }
 
-    eprintln!("{}: {} samples, {} mmaps, {} other → DA51 shards in {}",
-        perf_path, sample_idx, mmap_idx, other_idx, out_dir);
+    eprintln!(
+        "{}: {} samples, {} mmaps, {} other → DA51 shards in {}",
+        perf_path, sample_idx, mmap_idx, other_idx, out_dir
+    );
     Ok(())
 }
 
@@ -210,14 +297,24 @@ fn extract_fields(debug: &str, fields: &[&str]) -> Vec<(String, String)> {
             let rest = &debug[pos + pattern.len()..];
             // Find end: next comma at same nesting level, or closing brace/paren
             let mut depth = 0;
-            let end = rest.find(|c: char| {
-                match c {
-                    '(' | '[' | '{' => { depth += 1; false }
-                    ')' | ']' | '}' => { if depth == 0 { true } else { depth -= 1; false } }
+            let end = rest
+                .find(|c: char| match c {
+                    '(' | '[' | '{' => {
+                        depth += 1;
+                        false
+                    }
+                    ')' | ']' | '}' => {
+                        if depth == 0 {
+                            true
+                        } else {
+                            depth -= 1;
+                            false
+                        }
+                    }
                     ',' if depth == 0 => true,
                     _ => false,
-                }
-            }).unwrap_or(rest.len());
+                })
+                .unwrap_or(rest.len());
             let val = rest[..end].trim().to_string();
             result.push((field.to_string(), val));
         }

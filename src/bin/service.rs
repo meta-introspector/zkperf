@@ -16,7 +16,10 @@ use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 fn now_ns() -> u64 {
-    SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos() as u64
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_nanos() as u64
 }
 
 struct PerfSession {
@@ -111,45 +114,70 @@ fn route(method: &str, path: &str, body: &str, state: &Arc<Mutex<State>>) -> (St
         _ => ("404 Not Found".into(), r#"{"error":"not found"}"#.into()),
     };
     let ms = t0.elapsed().as_millis();
-    if ms > 0 { eprintln!("{} {} → {} ({}ms)", method, path, &status[..3], ms); }
+    if ms > 0 {
+        eprintln!("{} {} → {} ({}ms)", method, path, &status[..3], ms);
+    }
     (status, resp)
 }
 
 fn cmd_attach(body: &str, state: &Arc<Mutex<State>>) -> (String, String) {
     let pid: u32 = extract_u64(body, "pid") as u32;
     if pid == 0 {
-        return ("400 Bad Request".into(), r#"{"error":"pid required"}"#.into());
+        return (
+            "400 Bad Request".into(),
+            r#"{"error":"pid required"}"#.into(),
+        );
     }
 
     let mut st = state.lock().unwrap();
     if st.sessions.contains_key(&pid) {
-        return ("409 Conflict".into(), r#"{"error":"already attached"}"#.into());
+        return (
+            "409 Conflict".into(),
+            r#"{"error":"already attached"}"#.into(),
+        );
     }
 
     let data_path = format!("{}/perf-{}.data", st.data_dir, pid);
     let child = match Command::new("perf")
         .args([
-            "record", "-g", "--call-graph", "dwarf,65528",
-            "-e", "cycles:u,instructions:u,cache-misses:u,branch-misses:u",
-            "-p", &pid.to_string(),
-            "-o", &data_path,
+            "record",
+            "-g",
+            "--call-graph",
+            "dwarf,65528",
+            "-e",
+            "cycles:u,instructions:u,cache-misses:u,branch-misses:u",
+            "-p",
+            &pid.to_string(),
+            "-o",
+            &data_path,
         ])
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
     {
         Ok(c) => c,
-        Err(e) => return ("500 Internal Server Error".into(), format!(r#"{{"error":"{}"}}"#, e)),
+        Err(e) => {
+            return (
+                "500 Internal Server Error".into(),
+                format!(r#"{{"error":"{}"}}"#, e),
+            )
+        }
     };
 
-    st.sessions.insert(pid, PerfSession {
-        child,
+    st.sessions.insert(
         pid,
-        data_path: data_path.clone(),
-        boundaries: Vec::new(),
-    });
+        PerfSession {
+            child,
+            pid,
+            data_path: data_path.clone(),
+            boundaries: Vec::new(),
+        },
+    );
 
-    ("200 OK".into(), format!(r#"{{"pid":{},"data":"{}"}}"#, pid, data_path))
+    (
+        "200 OK".into(),
+        format!(r#"{{"pid":{},"data":"{}"}}"#, pid, data_path),
+    )
 }
 
 fn cmd_detach(body: &str, state: &Arc<Mutex<State>>) -> (String, String) {
@@ -158,12 +186,16 @@ fn cmd_detach(body: &str, state: &Arc<Mutex<State>>) -> (String, String) {
 
     if let Some(mut session) = st.sessions.remove(&pid) {
         // SIGINT to perf
-        unsafe { libc::kill(session.child.id() as i32, libc::SIGINT); }
+        unsafe {
+            libc::kill(session.child.id() as i32, libc::SIGINT);
+        }
         session.child.wait().ok();
 
         let n_boundaries = session.boundaries.len();
         // Generate witnesses for completed boundaries
-        let witnesses: Vec<String> = session.boundaries.iter()
+        let witnesses: Vec<String> = session
+            .boundaries
+            .iter()
             .filter(|b| b.end_ns.is_some())
             .map(|b| {
                 let elapsed_ms = (b.end_ns.unwrap() - b.start_ns) / 1_000_000;
@@ -185,12 +217,21 @@ fn cmd_detach(body: &str, state: &Arc<Mutex<State>>) -> (String, String) {
             })
             .collect();
 
-        ("200 OK".into(), format!(
-            r#"{{"pid":{},"data":"{}","boundaries":{},"witnesses":{}}}"#,
-            pid, session.data_path, n_boundaries, serde_json::to_string(&witnesses).unwrap()
-        ))
+        (
+            "200 OK".into(),
+            format!(
+                r#"{{"pid":{},"data":"{}","boundaries":{},"witnesses":{}}}"#,
+                pid,
+                session.data_path,
+                n_boundaries,
+                serde_json::to_string(&witnesses).unwrap()
+            ),
+        )
     } else {
-        ("404 Not Found".into(), r#"{"error":"pid not attached"}"#.into())
+        (
+            "404 Not Found".into(),
+            r#"{"error":"pid not attached"}"#.into(),
+        )
     }
 }
 
@@ -204,22 +245,46 @@ fn cmd_boundary(body: &str, state: &Arc<Mutex<State>>) -> (String, String) {
     if let Some(session) = st.sessions.get_mut(&pid) {
         match event.as_str() {
             "start" => {
-                session.boundaries.push(Boundary { sig: sig.clone(), start_ns: ts, end_ns: None });
-                ("200 OK".into(), format!(r#"{{"sig":"{}","start_ns":{}}}"#, sig, ts))
+                session.boundaries.push(Boundary {
+                    sig: sig.clone(),
+                    start_ns: ts,
+                    end_ns: None,
+                });
+                (
+                    "200 OK".into(),
+                    format!(r#"{{"sig":"{}","start_ns":{}}}"#, sig, ts),
+                )
             }
             "end" => {
-                if let Some(b) = session.boundaries.iter_mut().rev().find(|b| b.sig == sig && b.end_ns.is_none()) {
+                if let Some(b) = session
+                    .boundaries
+                    .iter_mut()
+                    .rev()
+                    .find(|b| b.sig == sig && b.end_ns.is_none())
+                {
                     b.end_ns = Some(ts);
                     let elapsed_ms = (ts - b.start_ns) / 1_000_000;
-                    ("200 OK".into(), format!(r#"{{"sig":"{}","elapsed_ms":{}}}"#, sig, elapsed_ms))
+                    (
+                        "200 OK".into(),
+                        format!(r#"{{"sig":"{}","elapsed_ms":{}}}"#, sig, elapsed_ms),
+                    )
                 } else {
-                    ("404 Not Found".into(), r#"{"error":"no open boundary"}"#.into())
+                    (
+                        "404 Not Found".into(),
+                        r#"{"error":"no open boundary"}"#.into(),
+                    )
                 }
             }
-            _ => ("400 Bad Request".into(), r#"{"error":"event must be start|end"}"#.into()),
+            _ => (
+                "400 Bad Request".into(),
+                r#"{"error":"event must be start|end"}"#.into(),
+            ),
         }
     } else {
-        ("404 Not Found".into(), r#"{"error":"pid not attached"}"#.into())
+        (
+            "404 Not Found".into(),
+            r#"{"error":"pid not attached"}"#.into(),
+        )
     }
 }
 
@@ -227,7 +292,8 @@ fn cmd_boundary(body: &str, state: &Arc<Mutex<State>>) -> (String, String) {
 /// Body: {"sig": "stego-exchange", "event": "meme-upload", "data_hash": "sha256hex", "size": 316}
 fn cmd_record_witness(body: &str, _state: &Arc<Mutex<State>>) -> (String, String) {
     let v: serde_json::Value = match serde_json::from_str(body) {
-        Ok(v) => v, Err(_) => return ("400 Bad Request".into(), r#"{"error":"bad json"}"#.into()),
+        Ok(v) => v,
+        Err(_) => return ("400 Bad Request".into(), r#"{"error":"bad json"}"#.into()),
     };
     let sig = v["sig"].as_str().unwrap_or("unknown");
     let event = v["event"].as_str().unwrap_or("event");
@@ -235,7 +301,9 @@ fn cmd_record_witness(body: &str, _state: &Arc<Mutex<State>>) -> (String, String
     let size = v["size"].as_u64().unwrap_or(0);
 
     let ts = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
 
     let witness = serde_json::json!({
         "sig": sig,
@@ -246,7 +314,10 @@ fn cmd_record_witness(body: &str, _state: &Arc<Mutex<State>>) -> (String, String
         "source": "direct",
     });
 
-    let witness_dir = format!("{}/.zkperf/witnesses", std::env::var("HOME").unwrap_or_default());
+    let witness_dir = format!(
+        "{}/.zkperf/witnesses",
+        std::env::var("HOME").unwrap_or_default()
+    );
     std::fs::create_dir_all(&witness_dir).ok();
     let path = format!("{}/{}_{}.json", witness_dir, sig, ts);
     std::fs::write(&path, serde_json::to_string_pretty(&witness).unwrap()).ok();
@@ -255,7 +326,10 @@ fn cmd_record_witness(body: &str, _state: &Arc<Mutex<State>>) -> (String, String
 }
 
 fn cmd_list_contracts() -> (String, String) {
-    let witness_dir = format!("{}/.zkperf/witnesses", std::env::var("HOME").unwrap_or_default());
+    let witness_dir = format!(
+        "{}/.zkperf/witnesses",
+        std::env::var("HOME").unwrap_or_default()
+    );
     // Scan witnesses to extract unique contracts (sig → latest witness)
     let mut contracts: HashMap<String, serde_json::Value> = HashMap::new();
     if let Ok(entries) = std::fs::read_dir(&witness_dir) {
@@ -274,9 +348,14 @@ fn cmd_list_contracts() -> (String, String) {
 }
 
 fn cmd_list_violations() -> (String, String) {
-    let vdir = format!("{}/.zkperf/violations", std::env::var("HOME").unwrap_or_default());
+    let vdir = format!(
+        "{}/.zkperf/violations",
+        std::env::var("HOME").unwrap_or_default()
+    );
     let entries: Vec<serde_json::Value> = std::fs::read_dir(&vdir)
-        .into_iter().flatten().flatten()
+        .into_iter()
+        .flatten()
+        .flatten()
         .filter_map(|e| std::fs::read_to_string(e.path()).ok())
         .filter_map(|s| serde_json::from_str(&s).ok())
         .collect();
@@ -285,7 +364,10 @@ fn cmd_list_violations() -> (String, String) {
 
 fn cmd_list_witnesses(state: &Arc<Mutex<State>>) -> (String, String) {
     let st = state.lock().unwrap();
-    let witness_dir = format!("{}/.zkperf/witnesses", std::env::var("HOME").unwrap_or_default());
+    let witness_dir = format!(
+        "{}/.zkperf/witnesses",
+        std::env::var("HOME").unwrap_or_default()
+    );
     let entries: Vec<String> = std::fs::read_dir(&witness_dir)
         .into_iter()
         .flatten()
@@ -296,10 +378,17 @@ fn cmd_list_witnesses(state: &Arc<Mutex<State>>) -> (String, String) {
 }
 
 fn cmd_get_witness(sig: &str, _state: &Arc<Mutex<State>>) -> (String, String) {
-    let path = format!("{}/.zkperf/witnesses/{}.json", std::env::var("HOME").unwrap_or_default(), sig);
+    let path = format!(
+        "{}/.zkperf/witnesses/{}.json",
+        std::env::var("HOME").unwrap_or_default(),
+        sig
+    );
     match std::fs::read_to_string(&path) {
         Ok(data) => ("200 OK".into(), data),
-        Err(_) => ("404 Not Found".into(), r#"{"error":"witness not found"}"#.into()),
+        Err(_) => (
+            "404 Not Found".into(),
+            r#"{"error":"witness not found"}"#.into(),
+        ),
     }
 }
 
@@ -310,7 +399,9 @@ fn extract_u64(json: &str, key: &str) -> u64 {
         .and_then(|i| {
             let rest = &json[i + pat.len()..];
             let start = rest.find(|c: char| c.is_ascii_digit())?;
-            let end = rest[start..].find(|c: char| !c.is_ascii_digit()).unwrap_or(rest.len() - start);
+            let end = rest[start..]
+                .find(|c: char| !c.is_ascii_digit())
+                .unwrap_or(rest.len() - start);
             rest[start..start + end].parse().ok()
         })
         .unwrap_or(0)

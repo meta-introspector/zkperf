@@ -29,7 +29,7 @@
 use proc_macro::TokenStream;
 use quote::quote;
 use sha2::{Digest, Sha256};
-use syn::{parse_macro_input, ItemFn, LitStr, LitInt};
+use syn::{parse_macro_input, ItemFn, LitInt, LitStr};
 
 /// Zero-config instrumentation. Just add `#[zkperf]` to any function.
 /// Records timing, generates witness, posts to zkperf-service if running.
@@ -91,7 +91,8 @@ pub fn zkperf(_attr: TokenStream, item: TokenStream) -> TokenStream {
     (quote! {
         #(#fn_attrs)*
         #vis #sig { #wrapped }
-    }).into()
+    })
+    .into()
 }
 
 #[proc_macro_attribute]
@@ -120,10 +121,18 @@ pub fn witness_boundary(attr: TokenStream, item: TokenStream) -> TokenStream {
     hasher.update(max_n.to_string().as_bytes());
     hasher.update(b"|");
     hasher.update(max_ms.to_string().as_bytes());
-    if let Some(c) = attrs.max_cycles { hasher.update(format!("|cyc:{c}").as_bytes()); }
-    if let Some(i) = attrs.max_instructions { hasher.update(format!("|ins:{i}").as_bytes()); }
-    if let Some(m) = attrs.max_cache_misses { hasher.update(format!("|cm:{m}").as_bytes()); }
-    if let Some(b) = attrs.max_branch_misses { hasher.update(format!("|bm:{b}").as_bytes()); }
+    if let Some(c) = attrs.max_cycles {
+        hasher.update(format!("|cyc:{c}").as_bytes());
+    }
+    if let Some(i) = attrs.max_instructions {
+        hasher.update(format!("|ins:{i}").as_bytes());
+    }
+    if let Some(m) = attrs.max_cache_misses {
+        hasher.update(format!("|cm:{m}").as_bytes());
+    }
+    if let Some(b) = attrs.max_branch_misses {
+        hasher.update(format!("|bm:{b}").as_bytes());
+    }
     let sig_hash = hex::encode(hasher.finalize());
 
     let has_perf = attrs.max_cycles.is_some()
@@ -277,18 +286,47 @@ impl syn::parse::Parse for BoundaryAttrs {
             let _: syn::Token![=] = input.parse()?;
 
             match key.to_string().as_str() {
-                "complexity" => { let v: LitStr = input.parse()?; attrs.complexity = v.value(); }
-                "max_n" => { let v: LitInt = input.parse()?; attrs.max_n = v.base10_parse()?; }
-                "max_ms" => { let v: LitInt = input.parse()?; attrs.max_ms = v.base10_parse()?; }
-                "context" => { let v: LitStr = input.parse()?; attrs.context = Some(v.value()); }
-                "max_cycles" => { let v: LitInt = input.parse()?; attrs.max_cycles = Some(v.base10_parse()?); }
-                "max_instructions" => { let v: LitInt = input.parse()?; attrs.max_instructions = Some(v.base10_parse()?); }
-                "max_cache_misses" => { let v: LitInt = input.parse()?; attrs.max_cache_misses = Some(v.base10_parse()?); }
-                "max_branch_misses" => { let v: LitInt = input.parse()?; attrs.max_branch_misses = Some(v.base10_parse()?); }
-                "enforce" => { let v: syn::LitBool = input.parse()?; attrs.enforce = v.value(); }
+                "complexity" => {
+                    let v: LitStr = input.parse()?;
+                    attrs.complexity = v.value();
+                }
+                "max_n" => {
+                    let v: LitInt = input.parse()?;
+                    attrs.max_n = v.base10_parse()?;
+                }
+                "max_ms" => {
+                    let v: LitInt = input.parse()?;
+                    attrs.max_ms = v.base10_parse()?;
+                }
+                "context" => {
+                    let v: LitStr = input.parse()?;
+                    attrs.context = Some(v.value());
+                }
+                "max_cycles" => {
+                    let v: LitInt = input.parse()?;
+                    attrs.max_cycles = Some(v.base10_parse()?);
+                }
+                "max_instructions" => {
+                    let v: LitInt = input.parse()?;
+                    attrs.max_instructions = Some(v.base10_parse()?);
+                }
+                "max_cache_misses" => {
+                    let v: LitInt = input.parse()?;
+                    attrs.max_cache_misses = Some(v.base10_parse()?);
+                }
+                "max_branch_misses" => {
+                    let v: LitInt = input.parse()?;
+                    attrs.max_branch_misses = Some(v.base10_parse()?);
+                }
+                "enforce" => {
+                    let v: syn::LitBool = input.parse()?;
+                    attrs.enforce = v.value();
+                }
                 other => {
-                    return Err(syn::Error::new(key.span(),
-                        format!("unknown attribute `{other}`")));
+                    return Err(syn::Error::new(
+                        key.span(),
+                        format!("unknown attribute `{other}`"),
+                    ));
                 }
             }
 

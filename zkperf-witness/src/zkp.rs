@@ -66,9 +66,7 @@ pub fn prove(witness: &crate::Witness) -> WitnessProof {
         hex::encode(h.finalize())
     };
 
-    let mut range_proofs = vec![
-        range_proof("time_ms", witness.max_ms, witness.elapsed_ms),
-    ];
+    let mut range_proofs = vec![range_proof("time_ms", witness.max_ms, witness.elapsed_ms)];
 
     if let Some(ref perf) = witness.perf {
         if let Some(ref _v) = witness.violations {
@@ -109,14 +107,16 @@ pub fn prove_with_constraints(
         h.update(witness.complexity.as_bytes());
         h.update(b"|");
         h.update(witness.max_ms.to_string().as_bytes());
-        if let Some(c) = constraints.max_cycles { h.update(c.to_string().as_bytes()); }
-        if let Some(i) = constraints.max_instructions { h.update(i.to_string().as_bytes()); }
+        if let Some(c) = constraints.max_cycles {
+            h.update(c.to_string().as_bytes());
+        }
+        if let Some(i) = constraints.max_instructions {
+            h.update(i.to_string().as_bytes());
+        }
         hex::encode(h.finalize())
     };
 
-    let mut range_proofs = vec![
-        range_proof("time_ms", witness.max_ms, witness.elapsed_ms),
-    ];
+    let mut range_proofs = vec![range_proof("time_ms", witness.max_ms, witness.elapsed_ms)];
 
     if let Some(ref perf) = witness.perf {
         if let (Some(bound), Some(actual)) = (constraints.max_cycles, perf.cycles) {

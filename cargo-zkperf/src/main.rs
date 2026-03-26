@@ -5,11 +5,11 @@
 //!   cargo-zkperf annotate [path] — auto-add #[zkperf] to public functions
 //!   cargo-zkperf report [path]   — JSON risk assessment rollup
 
+use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::path::Path;
-use serde::Serialize;
 use syn::visit::Visit;
-use syn::{Item, ItemFn, Visibility, Expr, Stmt};
+use syn::{Expr, Item, ItemFn, Stmt, Visibility};
 
 #[derive(Debug, Clone, Serialize)]
 struct FnRisk {
@@ -48,10 +48,11 @@ impl<'ast> Visit<'ast> for Scanner {
         let is_async = node.sig.asyncness.is_some();
         let is_unsafe = node.sig.unsafety.is_some();
 
-        let has_zkperf = node.attrs.iter().any(|a|
-            a.path().is_ident("zkperf"));
-        let has_wb = node.attrs.iter().any(|a|
-            a.path().is_ident("witness_boundary"));
+        let has_zkperf = node.attrs.iter().any(|a| a.path().is_ident("zkperf"));
+        let has_wb = node
+            .attrs
+            .iter()
+            .any(|a| a.path().is_ident("witness_boundary"));
 
         let body_str = quote::quote!(#node).to_string();
         let loc = body_str.lines().count();
@@ -82,14 +83,24 @@ impl<'ast> Visit<'ast> for Scanner {
 
         // Risk scoring
         let mut risk: u32 = 0;
-        if is_unsafe { risk += 30; }
+        if is_unsafe {
+            risk += 30;
+        }
         risk += counter.unsafe_blocks as u32 * 20;
         risk += counter.loop_count as u32 * 5;
         risk += (counter.max_loop_depth as u32).saturating_sub(1) * 15; // nested loops
-        if loc > 50 { risk += 10; }
-        if loc > 100 { risk += 15; }
-        if !has_zkperf && !has_wb { risk += 10; }
-        if is_pub { risk += 5; }
+        if loc > 50 {
+            risk += 10;
+        }
+        if loc > 100 {
+            risk += 15;
+        }
+        if !has_zkperf && !has_wb {
+            risk += 10;
+        }
+        if is_pub {
+            risk += 5;
+        }
 
         let risk_level = match risk {
             0..=10 => "low",
@@ -99,16 +110,27 @@ impl<'ast> Visit<'ast> for Scanner {
         };
 
         let line = self.source[..self.source.find(&format!("fn {}", name)).unwrap_or(0)]
-            .lines().count() + 1;
+            .lines()
+            .count()
+            + 1;
 
         self.functions.push(FnRisk {
-            file: self.file.clone(), name, line, loc,
-            is_pub, is_async, is_unsafe, has_zkperf, has_witness_boundary: has_wb,
+            file: self.file.clone(),
+            name,
+            line,
+            loc,
+            is_pub,
+            is_async,
+            is_unsafe,
+            has_zkperf,
+            has_witness_boundary: has_wb,
             unsafe_blocks: counter.unsafe_blocks,
             loop_count: counter.loop_count,
             loop_depth: counter.max_loop_depth,
             call_count: counter.call_count,
-            risk_score: risk, risk_level, signature: sig,
+            risk_score: risk,
+            risk_level,
+            signature: sig,
             inferred_complexity,
             inferred_max_ms,
         });
@@ -149,10 +171,12 @@ impl<'ast> Visit<'ast> for BlockCounter {
 
 fn scan_file(path: &Path) -> Vec<FnRisk> {
     let source = match std::fs::read_to_string(path) {
-        Ok(s) => s, Err(_) => return vec![],
+        Ok(s) => s,
+        Err(_) => return vec![],
     };
     let ast = match syn::parse_file(&source) {
-        Ok(f) => f, Err(_) => return vec![],
+        Ok(f) => f,
+        Err(_) => return vec![],
     };
     let mut scanner = Scanner {
         file: path.display().to_string(),
@@ -165,7 +189,9 @@ fn scan_file(path: &Path) -> Vec<FnRisk> {
 
 fn scan_dir(dir: &str) -> Vec<FnRisk> {
     let pattern = format!("{}/**/*.rs", dir);
-    glob::glob(&pattern).into_iter().flatten()
+    glob::glob(&pattern)
+        .into_iter()
+        .flatten()
         .flatten()
         .flat_map(|p| scan_file(&p))
         .collect()
@@ -174,44 +200,73 @@ fn scan_dir(dir: &str) -> Vec<FnRisk> {
 fn cmd_audit(dir: &str) {
     let fns = scan_dir(dir);
     let total = fns.len();
-    let instrumented = fns.iter().filter(|f| f.has_zkperf || f.has_witness_boundary).count();
+    let instrumented = fns
+        .iter()
+        .filter(|f| f.has_zkperf || f.has_witness_boundary)
+        .count();
     let uninstrumented = total - instrumented;
     let critical = fns.iter().filter(|f| f.risk_level == "critical").count();
     let high = fns.iter().filter(|f| f.risk_level == "high").count();
 
     eprintln!("zkperf audit: {} functions in {}", total, dir);
-    eprintln!("  instrumented: {} ({:.0}%)", instrumented, instrumented as f64 / total.max(1) as f64 * 100.0);
+    eprintln!(
+        "  instrumented: {} ({:.0}%)",
+        instrumented,
+        instrumented as f64 / total.max(1) as f64 * 100.0
+    );
     eprintln!("  uninstrumented: {}", uninstrumented);
     eprintln!("  risk: {} critical, {} high", critical, high);
     eprintln!();
 
     // Show uninstrumented functions sorted by risk
-    let mut risky: Vec<_> = fns.iter().filter(|f| !f.has_zkperf && !f.has_witness_boundary).collect();
+    let mut risky: Vec<_> = fns
+        .iter()
+        .filter(|f| !f.has_zkperf && !f.has_witness_boundary)
+        .collect();
     risky.sort_by(|a, b| b.risk_score.cmp(&a.risk_score));
 
     for f in risky.iter().take(30) {
-        let flags = format!("{}{}{}",
+        let flags = format!(
+            "{}{}{}",
             if f.is_pub { "pub " } else { "" },
             if f.is_async { "async " } else { "" },
-            if f.is_unsafe { "unsafe " } else { "" });
-        eprintln!("  {:>3} {:8} {}:{} {}fn {} [{}] max_ms={} ({}loc, d{}loops, {}unsafe, {}calls)",
-            f.risk_score, f.risk_level,
-            f.file.rsplit('/').next().unwrap_or(&f.file), f.line,
-            flags, f.name, f.inferred_complexity, f.inferred_max_ms,
-            f.loc, f.loop_depth, f.unsafe_blocks, f.call_count);
+            if f.is_unsafe { "unsafe " } else { "" }
+        );
+        eprintln!(
+            "  {:>3} {:8} {}:{} {}fn {} [{}] max_ms={} ({}loc, d{}loops, {}unsafe, {}calls)",
+            f.risk_score,
+            f.risk_level,
+            f.file.rsplit('/').next().unwrap_or(&f.file),
+            f.line,
+            flags,
+            f.name,
+            f.inferred_complexity,
+            f.inferred_max_ms,
+            f.loc,
+            f.loop_depth,
+            f.unsafe_blocks,
+            f.call_count
+        );
     }
-    if risky.len() > 30 { eprintln!("  ... and {} more", risky.len() - 30); }
+    if risky.len() > 30 {
+        eprintln!("  ... and {} more", risky.len() - 30);
+    }
 }
 
 fn cmd_annotate(dir: &str) {
     let fns = scan_dir(dir);
-    let targets: Vec<_> = fns.iter()
+    let targets: Vec<_> = fns
+        .iter()
         .filter(|f| f.is_pub && !f.has_zkperf && !f.has_witness_boundary)
         .collect();
 
-    eprintln!("annotating {} public functions with inferred constraints...", targets.len());
+    eprintln!(
+        "annotating {} public functions with inferred constraints...",
+        targets.len()
+    );
 
-    let mut by_file: std::collections::HashMap<&str, Vec<&&FnRisk>> = std::collections::HashMap::new();
+    let mut by_file: std::collections::HashMap<&str, Vec<&&FnRisk>> =
+        std::collections::HashMap::new();
     for f in &targets {
         by_file.entry(&f.file).or_default().push(f);
     }
@@ -238,14 +293,20 @@ fn cmd_annotate(dir: &str) {
             .collect();
         insertions.sort_by(|a, b| b.0.cmp(&a.0));
         for (line, annotation) in &insertions {
-            if *line < lines.len() && !lines[*line].contains("#[zkperf") && !lines[*line].contains("witness_boundary") {
+            if *line < lines.len()
+                && !lines[*line].contains("#[zkperf")
+                && !lines[*line].contains("witness_boundary")
+            {
                 lines.insert(*line, annotation.clone());
             }
         }
         std::fs::write(file, lines.join("\n")).unwrap();
         eprintln!("  {} — {} constraints added", file, fns.len());
         for f in fns {
-            eprintln!("    {} → {} max_ms={}", f.name, f.inferred_complexity, f.inferred_max_ms);
+            eprintln!(
+                "    {} → {} max_ms={}",
+                f.name, f.inferred_complexity, f.inferred_max_ms
+            );
         }
     }
 }
@@ -253,11 +314,21 @@ fn cmd_annotate(dir: &str) {
 fn cmd_report(dir: &str) {
     let fns = scan_dir(dir);
     let total = fns.len();
-    let instrumented = fns.iter().filter(|f| f.has_zkperf || f.has_witness_boundary).count();
+    let instrumented = fns
+        .iter()
+        .filter(|f| f.has_zkperf || f.has_witness_boundary)
+        .count();
     let total_risk: u32 = fns.iter().map(|f| f.risk_score).sum();
 
     #[derive(Serialize)]
-    struct Report { total_functions: usize, instrumented: usize, coverage_pct: f64, total_risk: u32, avg_risk: f64, functions: Vec<FnRisk> }
+    struct Report {
+        total_functions: usize,
+        instrumented: usize,
+        coverage_pct: f64,
+        total_risk: u32,
+        avg_risk: f64,
+        functions: Vec<FnRisk>,
+    }
 
     let report = Report {
         total_functions: total,
@@ -274,11 +345,15 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     // Support both `cargo zkperf` and `cargo-zkperf` invocation
     let (cmd, dir) = if args.len() > 1 && args[1] == "zkperf" {
-        (args.get(2).map(|s| s.as_str()).unwrap_or("audit"),
-         args.get(3).map(|s| s.as_str()).unwrap_or("src"))
+        (
+            args.get(2).map(|s| s.as_str()).unwrap_or("audit"),
+            args.get(3).map(|s| s.as_str()).unwrap_or("src"),
+        )
     } else {
-        (args.get(1).map(|s| s.as_str()).unwrap_or("audit"),
-         args.get(2).map(|s| s.as_str()).unwrap_or("src"))
+        (
+            args.get(1).map(|s| s.as_str()).unwrap_or("audit"),
+            args.get(2).map(|s| s.as_str()).unwrap_or("src"),
+        )
     };
 
     match cmd {

@@ -4,7 +4,6 @@
 ///   zkperf-parse <perf.txt> <source-file>     → single witness JSON
 ///   zkperf-parse --batch <dir>                 → all .perf files → JSONL + global commitment
 ///   zkperf-parse --combine                     → read witness JSONL from stdin → global commitment
-
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs;
@@ -47,9 +46,15 @@ fn main() {
 
 fn cmd_batch(dir: &str) {
     let mut witnesses = Vec::new();
-    let mut entries: Vec<_> = fs::read_dir(dir).unwrap()
+    let mut entries: Vec<_> = fs::read_dir(dir)
+        .unwrap()
         .filter_map(|e| e.ok())
-        .filter(|e| e.path().extension().map(|x| x == "txt" || x == "perf").unwrap_or(false))
+        .filter(|e| {
+            e.path()
+                .extension()
+                .map(|x| x == "txt" || x == "perf")
+                .unwrap_or(false)
+        })
         .collect();
     entries.sort_by_key(|e| e.path());
 
@@ -75,7 +80,9 @@ fn cmd_combine() {
     let mut commits = Vec::new();
     for line in stdin.lock().lines() {
         let line = line.unwrap();
-        if line.trim().is_empty() { continue; }
+        if line.trim().is_empty() {
+            continue;
+        }
         if let Ok(w) = serde_json::from_str::<Witness>(&line) {
             commits.push(w.commitment);
         }
@@ -106,7 +113,9 @@ fn parse_perf_file(path: &str, source: &str) -> Witness {
 
 fn parse_counter_line(line: &str) -> Option<(String, u64)> {
     let parts: Vec<&str> = line.split_whitespace().collect();
-    if parts.len() < 2 { return None; }
+    if parts.len() < 2 {
+        return None;
+    }
 
     let num_str = parts[0].replace(',', "");
     let val: u64 = num_str.parse().ok()?;
@@ -119,8 +128,14 @@ fn parse_counter_line(line: &str) -> Option<(String, u64)> {
         name
     };
 
-    let known = ["cycles", "instructions", "cache-misses", "cache-references",
-                  "branch-misses", "branches"];
+    let known = [
+        "cycles",
+        "instructions",
+        "cache-misses",
+        "cache-references",
+        "branch-misses",
+        "branches",
+    ];
     if known.iter().any(|&k| clean == k) {
         Some((clean.to_string(), val))
     } else {

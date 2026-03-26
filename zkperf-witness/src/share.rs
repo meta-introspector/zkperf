@@ -61,8 +61,12 @@ impl OwnedWitness {
         h.update(b"|");
         h.update(self.timestamp.to_string().as_bytes());
         if let Some(ref p) = self.perf {
-            if let Some(c) = p.cycles { h.update(c.to_string().as_bytes()); }
-            if let Some(i) = p.instructions { h.update(i.to_string().as_bytes()); }
+            if let Some(c) = p.cycles {
+                h.update(c.to_string().as_bytes());
+            }
+            if let Some(i) = p.instructions {
+                h.update(i.to_string().as_bytes());
+            }
         }
         hex::encode(h.finalize())
     }
@@ -97,7 +101,8 @@ impl WitnessBundle {
 
     /// Export to file.
     pub fn save(&self, path: &std::path::Path) -> std::io::Result<()> {
-        let json = self.to_json()
+        let json = self
+            .to_json()
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
         std::fs::write(path, json)
     }
@@ -105,8 +110,7 @@ impl WitnessBundle {
     /// Import from file.
     pub fn load(path: &std::path::Path) -> std::io::Result<Self> {
         let data = std::fs::read_to_string(path)?;
-        Self::from_json(&data)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+        Self::from_json(&data).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
     }
 }
 
