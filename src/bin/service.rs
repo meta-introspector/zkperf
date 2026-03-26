@@ -97,6 +97,8 @@ fn route(method: &str, path: &str, body: &str, state: &Arc<Mutex<State>>) -> (St
     let (status, resp) = match (method, path) {
         ("GET", "/health") => ("200 OK".into(), r#"{"status":"ok"}"#.into()),
         ("GET", "/build") => ("200 OK".into(), env!("ZKPERF_BUILD_WITNESS").into()),
+        ("GET", "/contracts") => cmd_list_contracts(),
+        ("GET", "/violations") => cmd_list_violations(),
         ("POST", "/attach") => cmd_attach(body, state),
         ("POST", "/detach") => cmd_detach(body, state),
         ("POST", "/boundary") => cmd_boundary(body, state),
@@ -250,6 +252,35 @@ fn cmd_record_witness(body: &str, _state: &Arc<Mutex<State>>) -> (String, String
     std::fs::write(&path, serde_json::to_string_pretty(&witness).unwrap()).ok();
 
     ("200 OK".into(), serde_json::to_string(&witness).unwrap())
+}
+
+fn cmd_list_contracts() -> (String, String) {
+    let witness_dir = format!("{}/.zkperf/witnesses", std::env::var("HOME").unwrap_or_default());
+    // Scan witnesses to extract unique contracts (sig → latest witness)
+    let mut contracts: HashMap<String, serde_json::Value> = HashMap::new();
+    if let Ok(entries) = std::fs::read_dir(&witness_dir) {
+        for e in entries.flatten() {
+            if let Ok(data) = std::fs::read_to_string(e.path()) {
+                if let Ok(v) = serde_json::from_str::<serde_json::Value>(&data) {
+                    if let Some(sig) = v["signature"].as_str() {
+                        contracts.insert(sig.to_string(), v);
+                    }
+                }
+            }
+        }
+    }
+    let list: Vec<_> = contracts.values().collect();
+    ("200 OK".into(), serde_json::to_string(&list).unwrap())
+}
+
+fn cmd_list_violations() -> (String, String) {
+    let vdir = format!("{}/.zkperf/violations", std::env::var("HOME").unwrap_or_default());
+    let entries: Vec<serde_json::Value> = std::fs::read_dir(&vdir)
+        .into_iter().flatten().flatten()
+        .filter_map(|e| std::fs::read_to_string(e.path()).ok())
+        .filter_map(|s| serde_json::from_str(&s).ok())
+        .collect();
+    ("200 OK".into(), serde_json::to_string(&entries).unwrap())
 }
 
 fn cmd_list_witnesses(state: &Arc<Mutex<State>>) -> (String, String) {
