@@ -360,6 +360,104 @@ fn main() {
         "audit" => cmd_audit(dir),
         "annotate" => cmd_annotate(dir),
         "report" => cmd_report(dir),
-        _ => eprintln!("usage: cargo zkperf <audit|annotate|report> [path]"),
+        "shard" => cmd_shard(dir),
+        _ => eprintln!("usage: cargo zkperf <audit|annotate|report|shard> [path]"),
     }
+}
+
+/// DA51 CBOR tag
+const DASL_TAG: u64 = 55889;
+
+/// Monster prime domain mapping
+fn monster_domain(f: &FnRisk) -> (u64, &'static str) {
+    let n = &f.name;
+    if n.contains("crypt") || n.contains("hash") || n.contains("sign") { return (5, "crypto"); }
+    if n.contains("net") || n.contains("connect") || n.contains("socket") || n.contains("wg") { return (7, "network"); }
+    if n.contains("parse") || n.contains("lex") || n.contains("token") { return (13, "parse"); }
+    if n.contains("prove") || n.contains("verify") || n.contains("witness") || n.contains("zkp") { return (17, "prove"); }
+    if n.contains("store") || n.contains("save") || n.contains("write") || n.contains("cbor") { return (19, "store"); }
+    if n.contains("graph") || n.contains("lattice") || n.contains("tree") { return (23, "graph"); }
+    if n.contains("perf") || n.contains("monitor") || n.contains("trace") { return (29, "monitor"); }
+    if n.contains("build") || n.contains("compile") || n.contains("cargo") { return (31, "compile"); }
+    if n.contains("deploy") || n.contains("service") || n.contains("systemd") { return (37, "deploy"); }
+    if n.contains("test") || n.contains("audit") || n.contains("check") || n.contains("scan") { return (41, "test"); }
+    if n.contains("render") || n.contains("view") || n.contains("ui") || n.contains("html") { return (43, "ui"); }
+    if n.contains("agent") || n.contains("mcp") || n.contains("tool") { return (47, "agent"); }
+    if n.contains("stego") || n.contains("encode") || n.contains("decode") { return (53, "stego"); }
+    if n.contains("tunnel") || n.contains("vpn") || n.contains("relay") { return (59, "vpn"); }
+    if n.contains("record") || n.contains("rec") || n.contains("tmux") { return (61, "record"); }
+    if n.contains("shard") || n.contains("distribute") { return (67, "shard"); }
+    if n.contains("bootstrap") || n.contains("main") || n.contains("init") { return (71, "meta"); }
+    if f.is_unsafe { return (2, "binary"); }
+    (3, "general")
+}
+
+fn cmd_shard(dir: &str) {
+    let fns = scan_dir(dir);
+    let project = dir.rsplit('/').nth(1).unwrap_or("unknown");
+
+    // Group functions by Monster prime
+    let mut shards: std::collections::HashMap<u64, Vec<&FnRisk>> = std::collections::HashMap::new();
+    for f in &fns {
+        let (prime, _) = monster_domain(f);
+        shards.entry(prime).or_default().push(f);
+    }
+
+    let out_dir = format!("{}/.zkperf/shards/{}", std::env::var("HOME").unwrap_or_default(), project);
+    std::fs::create_dir_all(&out_dir).ok();
+
+    let mut manifest = Vec::new();
+
+    for (prime, funcs) in &shards {
+        let (_, domain) = monster_domain(funcs[0]);
+        let rows: Vec<Vec<String>> = funcs.iter().map(|f| vec![
+            f.name.clone(), f.inferred_complexity.to_string(),
+            f.inferred_max_ms.to_string(), f.risk_score.to_string(), f.signature.clone(),
+        ]).collect();
+
+        // Build DA51 CBOR shard
+        let shard_data = serde_json::json!({
+            "id": format!("{}-shard-{}", project, prime),
+            "prime": prime,
+            "domain": domain,
+            "functions": funcs.len(),
+            "total_risk": funcs.iter().map(|f| f.risk_score).sum::<u32>(),
+            "table": {
+                "headers": ["function", "complexity", "max_ms", "risk", "signature"],
+                "rows": rows,
+            },
+            "tags": ["zkperf", format!("shard-{}", prime), domain],
+        });
+
+        // Encode as DA51 CBOR
+        let val = ciborium::Value::serialized(&shard_data).unwrap();
+        let tagged = ciborium::Value::Tag(DASL_TAG, Box::new(val));
+        let mut cbor_buf = Vec::new();
+        ciborium::into_writer(&tagged, &mut cbor_buf).unwrap();
+
+        // Content hash
+        let mut hasher = sha2::Sha256::new();
+        sha2::Digest::update(&mut hasher, &cbor_buf);
+        let cid = format!("bafk{}", &hex::encode(hasher.finalize())[..32]);
+
+        let path = format!("{}/{}-{}.cbor", out_dir, domain, prime);
+        std::fs::write(&path, &cbor_buf).ok();
+
+        manifest.push(serde_json::json!({
+            "prime": prime, "domain": domain, "cid": cid,
+            "functions": funcs.len(), "risk": funcs.iter().map(|f| f.risk_score).sum::<u32>(),
+            "path": path, "size": cbor_buf.len(),
+        }));
+
+        eprintln!("  shard-{:>2} {:8} {:>2} fns, risk {:>3}, {} bytes → {}",
+            prime, domain, funcs.len(),
+            funcs.iter().map(|f| f.risk_score).sum::<u32>(),
+            cbor_buf.len(), cid);
+    }
+
+    // Write manifest
+    let manifest_path = format!("{}/manifest.json", out_dir);
+    std::fs::write(&manifest_path, serde_json::to_string_pretty(&manifest).unwrap()).ok();
+    eprintln!("\n{} shards written to {}", shards.len(), out_dir);
+    eprintln!("manifest: {}", manifest_path);
 }
