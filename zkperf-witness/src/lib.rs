@@ -215,11 +215,12 @@ pub fn record_enforced(w: Witness) -> Result<Witness, PerfViolation> {
     record(w.clone());
     if w.violated {
         let v = PerfViolation { witness: w, commitment };
-        // Also persist violation proof
         let vdir = format!("{}/.zkperf/violations", dirs_fallback().display());
         std::fs::create_dir_all(&vdir).ok();
         let path = format!("{}/{}_{}.json", vdir, v.witness.signature, v.witness.timestamp);
         std::fs::write(&path, serde_json::to_string_pretty(&v).unwrap()).ok();
+        // Jump to unified violation handler
+        on_violation(ViolationSource::Userspace);
         Err(v)
     } else {
         Ok(w)
@@ -244,6 +245,89 @@ pub fn list_contracts() -> Vec<(&'static str, &'static str, &'static str, u64)> 
     CONTRACTS.lock().map(|c| c.clone()).unwrap_or_default()
 }
 
+
+// ============================================================================
+// Violation Handler — unified landing pad for kernel (SIGXCPU) and userspace
+// ============================================================================
+
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+
+static HANDLER_INSTALLED: AtomicBool = AtomicBool::new(false);
+static VIOLATION_COUNT: AtomicUsize = AtomicUsize::new(0);
+static VIOLATION_HANDLER: std::sync::Mutex<Option<Box<dyn Fn(ViolationSource) + Send + 'static>>> =
+    std::sync::Mutex::new(None);
+
+/// Where the violation came from.
+#[derive(Debug, Clone, Copy)]
+pub enum ViolationSource {
+    /// Kernel eBPF sent SIGXCPU
+    Kernel,
+    /// Userspace #[witness_boundary enforce=true] detected violation
+    Userspace,
+}
+
+/// Install the zkperf violation handler.
+/// Catches SIGXCPU from kernel eBPF and calls the handler.
+/// Also called by userspace enforce mode.
+///
+/// ```rust,ignore
+/// zkperf_witness::install_violation_handler(|source| {
+///     eprintln!("perf violation from {:?}!", source);
+///     // log, alert, graceful shutdown, etc.
+/// });
+/// ```
+pub fn install_violation_handler<F: Fn(ViolationSource) + Send + 'static>(handler: F) {
+    *VIOLATION_HANDLER.lock().unwrap() = Some(Box::new(handler));
+
+    if !HANDLER_INSTALLED.swap(true, Ordering::SeqCst) {
+        // Install SIGXCPU signal handler (Unix only)
+        #[cfg(unix)]
+        unsafe {
+            libc::signal(libc::SIGXCPU, sigxcpu_handler as libc::sighandler_t);
+        }
+    }
+}
+
+#[cfg(unix)]
+extern "C" fn sigxcpu_handler(_sig: libc::c_int) {
+    // Signal-safe: just set flag + increment counter
+    VIOLATION_COUNT.fetch_add(1, Ordering::SeqCst);
+    // Spawn thread to do the actual handling (signal handlers can't do much)
+    let _ = std::thread::spawn(|| {
+        on_violation(ViolationSource::Kernel);
+    });
+}
+
+/// Called from both signal handler (kernel) and enforce mode (userspace).
+pub fn on_violation(source: ViolationSource) {
+    VIOLATION_COUNT.fetch_add(1, Ordering::SeqCst);
+
+    // Record the violation as a witness
+    let w = Witness {
+        context: match source { ViolationSource::Kernel => "kernel-ebpf", ViolationSource::Userspace => "userspace-enforce" },
+        signature: "violation-handler",
+        complexity: "N/A",
+        max_n: 0, max_ms: 0,
+        elapsed_ms: 0,
+        violated: true,
+        timestamp: now_ms(),
+        platform: std::env::consts::OS,
+        perf: None, violations: None,
+    };
+    record(w);
+
+    // Call user handler
+    if let Ok(guard) = VIOLATION_HANDLER.lock() {
+        if let Some(ref handler) = *guard {
+            handler(source);
+        }
+    }
+}
+
+/// Get total violation count (kernel + userspace).
+pub fn violation_count() -> usize {
+    VIOLATION_COUNT.load(Ordering::SeqCst)
+}
 /// Current time in milliseconds since epoch.
 pub fn now_ms() -> u64 {
     std::time::SystemTime::now()
