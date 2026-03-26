@@ -27,5 +27,5 @@ jobs:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo test -p zkperf-witness -p zkperf-macros -p cargo-zkperf
-      - run: cargo fmt -- --check
+      - run: cargo fmt -p zkperf-witness -p zkperf-macros -p cargo-zkperf -- --check
       - run: cargo clippy -p zkperf-witness -p zkperf-macros -p cargo-zkperf -- -D warnings
