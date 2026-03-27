@@ -31,6 +31,7 @@ fn main() -> Result<()> {
         eprintln!("usage:");
         eprintln!("  zkperf-record [--private] run  <cmd> <out-dir>");
         eprintln!("  zkperf-record [--private] read <perf.data> <out-dir>");
+        eprintln!("  zkperf-record trace <perf.data>  — raw timeline (ts,ip,event) to stdout");
         eprintln!("  zkperf-record agda <shard-dir> <out.agda> [module]");
         eprintln!(
             "\n  --private  commit side-channel values (Merkle tree), redact sensitive fields"
@@ -40,6 +41,7 @@ fn main() -> Result<()> {
     match args[0] {
         "run" => cmd_run(args[1], args[2], private)?,
         "read" => cmd_read(args[1], args[2], private)?,
+        "trace" => cmd_trace(args[1])?,
         "agda" => {
             let m = args.get(3).copied().unwrap_or("PerfTrace");
             cmd_agda(args[1], args[2], m)?;
@@ -391,4 +393,36 @@ fn cbor_to_agda(val: &ciborium::Value) -> String {
         }
         _ => "(ctext \"?\")".into(),
     }
+}
+
+/// Emit raw per-sample timeline: ts, ip, event — one line per sample
+fn cmd_trace(perf_path: &str) -> Result<()> {
+    let file = File::open(perf_path)?;
+    let reader = BufReader::new(file);
+    let PerfFileReader {
+        mut perf_file,
+        mut record_iter,
+    } = PerfFileReader::parse_file(reader)?;
+
+    let events: Vec<String> = perf_file
+        .event_attributes()
+        .iter()
+        .filter_map(|a| a.name().map(|s| s.to_string()))
+        .collect();
+
+    println!("ts\tip\tevent");
+    while let Some(record) = record_iter.next_record(&mut perf_file)? {
+        if let PerfFileRecord::EventRecord { attr_index, record } = record {
+            let event_name = events.get(attr_index).cloned().unwrap_or_default();
+            let ts = record.common_data().ok().and_then(|cd| cd.timestamp).unwrap_or(0);
+            if let Ok(parsed) = record.parse() {
+                use linux_perf_data::linux_perf_event_reader::EventRecord;
+                if let EventRecord::Sample(s) = parsed {
+                    let ip = s.ip.unwrap_or(0);
+                    println!("{}\t0x{:x}\t{}", ts, ip, event_name);
+                }
+            }
+        }
+    }
+    Ok(())
 }
