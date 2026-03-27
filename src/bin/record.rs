@@ -42,6 +42,7 @@ fn main() -> Result<()> {
         "run" => cmd_run(args[1], args[2], private)?,
         "read" => cmd_read(args[1], args[2], private)?,
         "trace" => cmd_trace(args[1])?,
+        "flow" => cmd_flow(args[1])?,
         "agda" => {
             let m = args.get(3).copied().unwrap_or("PerfTrace");
             cmd_agda(args[1], args[2], m)?;
@@ -419,7 +420,75 @@ fn cmd_trace(perf_path: &str) -> Result<()> {
                 use linux_perf_data::linux_perf_event_reader::EventRecord;
                 if let EventRecord::Sample(s) = parsed {
                     let ip = s.ip.unwrap_or(0);
-                    println!("{}\t0x{:x}\t{}", ts, ip, event_name);
+                    // Collect register values
+                    let mut regs = Vec::new();
+                    if let Some(ref ir) = s.intr_regs {
+                        for idx in [0,1,2,3,4,5,7,8,9,10,11,12,13,14] {
+                            if let Some(v) = ir.get(idx) { regs.push((idx, v)); }
+                        }
+                    }
+                    if regs.is_empty() {
+                        println!("{}\t0x{:x}\t{}", ts, ip, event_name);
+                    } else {
+                        let rv: String = regs.iter().map(|(i,v)| format!("r{}=0x{:x}", i, v)).collect::<Vec<_>>().join(",");
+                        println!("{}\t0x{:x}\t{}\t{}", ts, ip, event_name, rv);
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Emit register value flow: only when a register value changes
+fn cmd_flow(perf_path: &str) -> Result<()> {
+    let file = File::open(perf_path)?;
+    let reader = BufReader::new(file);
+    let PerfFileReader {
+        mut perf_file,
+        mut record_iter,
+    } = PerfFileReader::parse_file(reader)?;
+
+    let reg_names = ["AX","BX","CX","DX","SI","DI","??","R8","R9","R10","R11","R12","R13","R14","R15"];
+    let reg_indices: Vec<u64> = vec![0,1,2,3,4,5,7,8,9,10,11,12,13,14];
+
+    let mut prev: HashMap<u64, u64> = HashMap::new(); // reg_idx → last value
+    let mut prev_ip: u64 = 0;
+
+    println!("ts\tip\tchanged_regs");
+    while let Some(record) = record_iter.next_record(&mut perf_file)? {
+        if let PerfFileRecord::EventRecord { record, .. } = record {
+            let ts = record.common_data().ok().and_then(|cd| cd.timestamp).unwrap_or(0);
+            if let Ok(parsed) = record.parse() {
+                use linux_perf_data::linux_perf_event_reader::EventRecord;
+                if let EventRecord::Sample(s) = parsed {
+                    let ip = s.ip.unwrap_or(0);
+                    if let Some(ref ir) = s.intr_regs {
+                        let mut changes = Vec::new();
+                        for &idx in &reg_indices {
+                            if let Some(v) = ir.get(idx) {
+                                let old = prev.get(&idx).copied();
+                                if old != Some(v) {
+                                    let name = reg_names.get(idx as usize).unwrap_or(&"??");
+                                    match old {
+                                        Some(ov) => changes.push(format!("{}:0x{:x}→0x{:x}", name, ov, v)),
+                                        None => changes.push(format!("{}:=0x{:x}", name, v)),
+                                    }
+                                    prev.insert(idx, v);
+                                }
+                            }
+                        }
+                        if !changes.is_empty() || ip != prev_ip {
+                            let ip_change = if ip != prev_ip { format!("ip:0x{:x}→0x{:x}", prev_ip, ip) } else { String::new() };
+                            prev_ip = ip;
+                            if !changes.is_empty() || !ip_change.is_empty() {
+                                let all = if ip_change.is_empty() { changes.join(",") }
+                                    else if changes.is_empty() { ip_change }
+                                    else { format!("{},{}", ip_change, changes.join(",")) };
+                                println!("{}\t0x{:x}\t{}", ts, ip, all);
+                            }
+                        }
+                    }
                 }
             }
         }
