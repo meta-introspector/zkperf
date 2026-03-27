@@ -77,8 +77,9 @@ fn handle(mut stream: std::net::TcpStream, state: Arc<Mutex<State>>) {
     let (method, path, body) = parse_req(&req);
     let (status, resp) = route(&method, &path, &body, &state);
 
+    let ct = if path == "/metrics" { "text/plain" } else { "application/json" };
     let out = format!(
-        "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{resp}",
+        "HTTP/1.1 {status}\r\nContent-Type: {ct}\r\nContent-Length: {}\r\n\r\n{resp}",
         resp.len()
     );
     stream.write_all(out.as_bytes()).ok();
@@ -100,6 +101,7 @@ fn route(method: &str, path: &str, body: &str, state: &Arc<Mutex<State>>) -> (St
     let (status, resp) = match (method, path) {
         ("GET", "/health") => ("200 OK".into(), r#"{"status":"ok"}"#.into()),
         ("GET", "/build") => ("200 OK".into(), env!("ZKPERF_BUILD_WITNESS").into()),
+        ("GET", "/metrics") => cmd_metrics(),
         ("GET", "/contracts") => cmd_list_contracts(),
         ("GET", "/violations") => cmd_list_violations(),
         ("POST", "/attach") => cmd_attach(body, state),
@@ -325,6 +327,33 @@ fn cmd_record_witness(body: &str, _state: &Arc<Mutex<State>>) -> (String, String
     ("200 OK".into(), serde_json::to_string(&witness).unwrap())
 }
 
+
+fn cmd_metrics() -> (String, String) {
+    let home = std::env::var("HOME").unwrap_or_default();
+    let w_count = std::fs::read_dir(format!("{}/.zkperf/witnesses", home))
+        .map(|d| d.count()).unwrap_or(0);
+    let v_count = std::fs::read_dir(format!("{}/.zkperf/violations", home))
+        .map(|d| d.count()).unwrap_or(0);
+    let c_count = std::fs::read_dir(format!("{}/.zkperf/shards", home))
+        .map(|d| d.count()).unwrap_or(0);
+
+    let body = format!(
+        "# HELP zkperf_witnesses_total Total witness records\n\
+         # TYPE zkperf_witnesses_total gauge\n\
+         zkperf_witnesses_total {}\n\
+         # HELP zkperf_violations_total Total contract violations\n\
+         # TYPE zkperf_violations_total gauge\n\
+         zkperf_violations_total {}\n\
+         # HELP zkperf_shards_total Total shard projects\n\
+         # TYPE zkperf_shards_total gauge\n\
+         zkperf_shards_total {}\n\
+         # HELP zkperf_up Service is up\n\
+         # TYPE zkperf_up gauge\n\
+         zkperf_up 1\n",
+        w_count, v_count, c_count
+    );
+    ("200 OK".into(), body)
+}
 fn cmd_list_contracts() -> (String, String) {
     let witness_dir = format!(
         "{}/.zkperf/witnesses",
