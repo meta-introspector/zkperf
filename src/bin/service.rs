@@ -77,10 +77,37 @@ fn handle(mut stream: std::net::TcpStream, state: Arc<Mutex<State>>) {
     let (method, path, body) = parse_req(&req);
     let (status, resp) = route(&method, &path, &body, &state);
 
-    let ct = if path == "/metrics" { "text/plain" } else { "application/json" };
+    let ct = if path == "/metrics" { "text/plain" }
+             else if path.ends_with(".sf") { "text/plain" }
+             else if path.ends_with(".erdfa") { "text/html" }
+             else if path.ends_with(".cbor") { "application/cbor" }
+             else { "application/json" };
+
+    // Strip extension for routing
+    let clean_path = path.trim_end_matches(".sf")
+        .trim_end_matches(".erdfa")
+        .trim_end_matches(".cbor");
+
+    let (status, resp) = route(&method, clean_path, &body, &state);
+
+    // Transform response based on format
+    let final_resp = if path.ends_with(".sf") {
+        format!("SF|1.0|zkperf|{}|29^1|auto|zkperf:responds:{}", clean_path.trim_start_matches('/'), &resp[..resp.len().min(60)])
+    } else if path.ends_with(".erdfa") {
+        format!("<div vocab=\"https://schema.org/\" typeof=\"Action\">\
+            <meta property=\"name\" content=\"zkperf:{}\"/>\
+            <meta property=\"result\" content=\"{}\"/>\
+            <div property=\"object\">{}</div></div>",
+            clean_path.trim_start_matches('/'),
+            &status,
+            resp.replace('<', "&lt;").replace('>', "&gt;"))
+    } else {
+        resp
+    };
+
     let out = format!(
-        "HTTP/1.1 {status}\r\nContent-Type: {ct}\r\nContent-Length: {}\r\n\r\n{resp}",
-        resp.len()
+        "HTTP/1.1 {status}\r\nContent-Type: {ct}\r\nContent-Length: {}\r\nAccess-Control-Allow-Origin: *\r\n\r\n{final_resp}",
+        final_resp.len()
     );
     stream.write_all(out.as_bytes()).ok();
 }
