@@ -32,6 +32,8 @@ fn main() -> Result<()> {
         eprintln!("  zkperf-record [--private] run  <cmd> <out-dir>");
         eprintln!("  zkperf-record [--private] read <perf.data> <out-dir>");
         eprintln!("  zkperf-record trace <perf.data>  — raw timeline (ts,ip,event) to stdout");
+        eprintln!("  zkperf-record flow  <perf.data>  — register value changes only");
+        eprintln!("  zkperf-record filter <perf.data> -f <filter.toml>  — tagged flow events");
         eprintln!("  zkperf-record agda <shard-dir> <out.agda> [module]");
         eprintln!(
             "\n  --private  commit side-channel values (Merkle tree), redact sensitive fields"
@@ -43,6 +45,11 @@ fn main() -> Result<()> {
         "read" => cmd_read(args[1], args[2], private)?,
         "trace" => cmd_trace(args[1])?,
         "flow" => cmd_flow(args[1])?,
+        "filter" => {
+            let filter_path = args.iter().position(|a| *a == "-f")
+                .map(|i| args[i + 1]).unwrap_or("filters/hash_trace.toml");
+            cmd_filter(args[1], filter_path)?;
+        }
         "agda" => {
             let m = args.get(3).copied().unwrap_or("PerfTrace");
             cmd_agda(args[1], args[2], m)?;
@@ -492,6 +499,107 @@ fn cmd_flow(perf_path: &str) -> Result<()> {
                 }
             }
         }
+    }
+    Ok(())
+}
+
+/// Filter flow events using FRACTRAN filter rules from TOML
+fn cmd_filter(perf_path: &str, filter_path: &str) -> Result<()> {
+    // Parse filter rules
+    let filter_str = fs::read_to_string(filter_path)
+        .unwrap_or_else(|_| include_str!("../../filters/hash_trace.toml").to_string());
+
+    let file = File::open(perf_path)?;
+    let reader = BufReader::new(file);
+    let PerfFileReader { mut perf_file, mut record_iter, .. } =
+        PerfFileReader::parse_file(reader)?;
+
+    let reg_indices: Vec<(u64, &str)> = vec![
+        (0,"AX"),(1,"BX"),(2,"CX"),(3,"DX"),(4,"SI"),(5,"DI"),(7,"R8"),(8,"R9"),
+    ];
+
+    let mut prev: HashMap<u64, u64> = HashMap::new();
+    let mut prev_bx: Option<u64> = None;
+    let mut counts: HashMap<&str, u64> = HashMap::new();
+
+    println!("ts\tip\ttags\tdetail");
+
+    while let Some(record) = record_iter.next_record(&mut perf_file)? {
+        if let PerfFileRecord::EventRecord { record, .. } = record {
+            let ts = record.common_data().ok().and_then(|cd| cd.timestamp).unwrap_or(0);
+            if let Ok(parsed) = record.parse() {
+                use linux_perf_data::linux_perf_event_reader::EventRecord;
+                if let EventRecord::Sample(s) = parsed {
+                    let ip = s.ip.unwrap_or(0);
+                    let ir = match &s.intr_regs { Some(r) => r, None => continue };
+
+                    let mut tags: Vec<&str> = Vec::new();
+                    let mut detail = String::new();
+                    let mut n_changes = 0u32;
+
+                    for &(idx, name) in &reg_indices {
+                        if let Some(v) = ir.get(idx) {
+                            let old = prev.get(&idx).copied();
+                            let changed = old != Some(v);
+                            if changed { n_changes += 1; }
+
+                            // INPUT_READ: SI resets to input buffer
+                            if idx == 4 && (v & 0xFFFFFFFF00000000) == 0x5555555500000000 && changed {
+                                tags.push("INPUT_READ");
+                                detail += &format!("SI=0x{:x} ", v);
+                            }
+                            // ASCII_DATA: AX has printable ASCII bytes
+                            if idx == 0 && changed {
+                                let bytes = v.to_be_bytes();
+                                if bytes.iter().all(|&b| b >= 0x20 && b <= 0x7e) {
+                                    let s: String = bytes.iter().map(|&b| b as char).collect();
+                                    tags.push("ASCII_DATA");
+                                    detail += &format!("AX=\"{}\" ", s);
+                                }
+                            }
+                            // OUTPUT_WRITE: DI points to stack output
+                            if idx == 5 && (v & 0xFFFFFF0000000000) == 0x7FFFFF0000000000 && changed {
+                                tags.push("OUTPUT_WRITE");
+                            }
+                            // LOOP_TICK: BX decreasing
+                            if idx == 1 && changed {
+                                if let Some(ob) = prev_bx {
+                                    if v < ob && ob - v < 0x1000 {
+                                        tags.push("LOOP_TICK");
+                                        detail += &format!("BX:0x{:x}→0x{:x} ", ob, v);
+                                    }
+                                }
+                                prev_bx = Some(v);
+                            }
+                            // FUNC_ENTER: R8 changes to stack addr
+                            if idx == 7 && changed && (v & 0xFFFFFF0000000000) == 0x7FFFFF0000000000 {
+                                tags.push("FUNC_ENTER");
+                            }
+                            // SEED_INIT: AX = small constant
+                            if idx == 0 && v <= 0x10 && changed {
+                                tags.push("SEED_INIT");
+                                detail += &format!("AX={} ", v);
+                            }
+                            if changed { prev.insert(idx, v); }
+                        }
+                    }
+                    // MIX_ROUND: 4+ registers change
+                    if n_changes >= 4 { tags.push("MIX_ROUND"); }
+
+                    if !tags.is_empty() {
+                        for t in &tags { *counts.entry(t).or_default() += 1; }
+                        println!("{}\t0x{:x}\t{}\t{}", ts, ip, tags.join(","), detail.trim());
+                    }
+                }
+            }
+        }
+    }
+
+    eprintln!("\n═══ FILTER SUMMARY ═══");
+    let mut ranked: Vec<_> = counts.iter().collect();
+    ranked.sort_by(|a, b| b.1.cmp(a.1));
+    for (tag, count) in &ranked {
+        eprintln!("  {:15} {:8}", tag, count);
     }
     Ok(())
 }

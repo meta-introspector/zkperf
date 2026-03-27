@@ -1,0 +1,35 @@
+# FRACTRAN filter for zkperf flow traces
+# Each rule: numerator/denominator = match pattern / output transform
+# Matches register values by prime encoding, filters flow events
+#
+# Primes: AX=2, BX=3, CX=5, DX=7, SI=11, DI=13, R8=17, R9=19
+#
+# Filter types:
+#   input_load    — SI resets to input buffer pointer
+#   mixing_step   — all 6 regs change simultaneously (hash round)
+#   output_store  — DI points to output buffer
+#   loop_counter  — BX decrements monotonically
+#   ascii_load    — AX contains ASCII-range bytes (input data visible)
+
+[filters]
+
+# Detect input data being loaded: SI = input buffer address
+input_load = { reg = "SI", match = "=0x5555555e", action = "tag:INPUT_READ" }
+
+# Detect ASCII data appearing in registers (raw input visible)
+ascii_load = { reg = "AX", match_range = [0x2020202020202020, 0x7e7e7e7e7e7e7e7e], action = "tag:ASCII_DATA" }
+
+# Detect hash mixing: 4+ registers change in one step
+mixing_step = { min_changes = 4, action = "tag:MIX_ROUND" }
+
+# Detect output write: DI = output buffer
+output_store = { reg = "DI", match = "=0x7fffffffa", action = "tag:OUTPUT_WRITE" }
+
+# Detect loop counter: BX decreasing
+loop_counter = { reg = "BX", direction = "decreasing", action = "tag:LOOP_TICK" }
+
+# Detect function boundary: R8 changes (stack frame switch)
+func_boundary = { reg = "R8", match = "→0x7fffffffa", action = "tag:FUNC_ENTER" }
+
+# Detect constant seed: AX = 1 (common in xxh3/streebog init)
+seed_init = { reg = "AX", match = "=0x1", action = "tag:SEED_INIT" }
