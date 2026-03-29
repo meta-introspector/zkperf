@@ -95,11 +95,32 @@ make report                                    # Generate JSON report
 - [Existing Data Catalog](docs/EXISTING_DATA.md)
 - [Recording Tools Reference](docs/RECORDING_TOOLS.md)
 - [eRDFa Integration](docs/ERDFA_INTEGRATION.md)
+- [Sample Trace Compression](docs/SAMPLE_TRACE_COMPRESSION.md)
 - [Proof Artifacts](proofs/README.md)
 - [CRQ-002: zkPerf Specification](../CRQ-002-introspector.md)
 - [zkELF: ELF Signatures](../ZKELF.md)
 - [zkStego: Steganographic Protocol](../ZKSTEGO.md)
 - [Witness System](../WITNESS_SYSTEM.md)
+
+## Sample Trace Utility
+
+For normalized sample-trace JSON, `zkperf` now has a small standalone
+projection/reconstruction codec:
+
+```bash
+python3 scripts/compact-sample-trace.py stats input.json compact.json \
+  --roundtrip-output roundtrip.json
+```
+
+This utility keeps only the raw generating fields needed to reconstruct the
+derived trace surface exactly. It is meant for normalized downstream
+sample-trace JSON, not as a replacement for raw `perf.data` or DA51 shards.
+
+The important property is exact round-trip:
+
+- compact payload keeps the canonical generating fields
+- derived matrix/annotation fields are dropped
+- decode reconstructs the normalized trace contract exactly
 
 ## License
 
