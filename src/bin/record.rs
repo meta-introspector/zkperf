@@ -113,7 +113,40 @@ fn cmd_run(cmd: &str, out_dir: &str, private: bool) -> Result<()> {
 
     Command::new("perf")
         .args(&args)
-        .status()?;
+        .spawn()
+        .and_then(|mut child| {
+            use std::time::{Duration, Instant};
+            let interval = Duration::from_secs(
+                get_cfg("status_interval", "10").parse().unwrap_or(10)
+            );
+            let start = Instant::now();
+            loop {
+                match child.try_wait()? {
+                    Some(status) => {
+                        if !status.success() {
+                            eprintln!("perf exited with {}", status);
+                        }
+                        break;
+                    }
+                    None => {
+                        std::thread::sleep(Duration::from_secs(1));
+                        if start.elapsed() >= interval {
+                            let elapsed = start.elapsed().as_secs();
+                            let size = fs::metadata(&perf_data)
+                                .map(|m| m.len() / 1024 / 1024)
+                                .unwrap_or(0);
+                            if elapsed % interval.as_secs() == 0 {
+                                eprintln!(
+                                    "[zkperf] {}s elapsed, perf.data={}MB",
+                                    elapsed, size
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            Ok(())
+        })?;
     cmd_read(&perf_data, out_dir, private)
 }
 
