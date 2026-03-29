@@ -67,23 +67,52 @@ fn cmd_run(cmd: &str, out_dir: &str, private: bool) -> Result<()> {
         if private { " (private)" } else { "" },
         cmd
     );
+    // Load perf options from config or use defaults
+    let config_path = format!("{}/config.toml", out_dir.rsplit_once('/').map(|(p,_)| p).unwrap_or("."));
+    let config_text = fs::read_to_string(&config_path)
+        .or_else(|_| fs::read_to_string("config.toml"))
+        .unwrap_or_default();
+
+    let get_cfg = |key: &str, default: &str| -> String {
+        config_text.lines()
+            .find(|l| l.trim().starts_with(key))
+            .and_then(|l| l.split_once('='))
+            .map(|(_, v)| v.trim().trim_matches('"').to_string())
+            .unwrap_or_else(|| default.to_string())
+    };
+
+    let call_graph = get_cfg("call_graph", "fp");
+    let events = get_cfg("events", "cycles:u,instructions:u,cache-misses:u,branch-misses:u");
+    let frequency = get_cfg("frequency", "997");
+    let mmap_pages = get_cfg("mmap_pages", "512");
+    let extra_args = get_cfg("perf_extra", "");
+
+    let mut args = vec![
+        "record".to_string(),
+        "-g".to_string(),
+        "--call-graph".to_string(),
+        call_graph,
+        "-e".to_string(),
+        events,
+        "-F".to_string(),
+        frequency,
+        "--mmap-pages".to_string(),
+        mmap_pages,
+    ];
+    for a in extra_args.split_whitespace() {
+        if !a.is_empty() { args.push(a.to_string()); }
+    }
+    args.extend([
+        "-o".to_string(),
+        perf_data.clone(),
+        "--".to_string(),
+        "sh".to_string(),
+        "-c".to_string(),
+        cmd.to_string(),
+    ]);
+
     Command::new("perf")
-        .args([
-            "record",
-            "-g",
-            "--call-graph",
-            "dwarf,65528",
-            "-e",
-            "cycles:u,instructions:u,cache-misses:u,branch-misses:u",
-            "-c",
-            "100",
-            "-o",
-            &perf_data,
-            "--",
-            "sh",
-            "-c",
-            cmd,
-        ])
+        .args(&args)
         .status()?;
     cmd_read(&perf_data, out_dir, private)
 }
