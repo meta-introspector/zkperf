@@ -1,0 +1,90 @@
+#!/bin/bash
+# zkperf-capture: full process forensics snapshot
+# Usage: zkperf-capture <PID> [output-dir]
+set -euo pipefail
+
+PID="${1:?Usage: zkperf-capture <PID> [output-dir]}"
+OUT="${2:-/tmp/zkperf-capture-${PID}-$(date +%s)}"
+mkdir -p "$OUT"
+
+echo "=== zkperf-capture PID=$PID → $OUT ==="
+
+# 1. Process info
+echo "[1/9] proc"
+cp /proc/$PID/status "$OUT/status" 2>/dev/null || true
+cp /proc/$PID/cmdline "$OUT/cmdline" 2>/dev/null || true
+cp /proc/$PID/environ "$OUT/environ" 2>/dev/null || true
+cat /proc/$PID/cgroup > "$OUT/cgroup" 2>/dev/null || true
+cat /proc/$PID/limits > "$OUT/limits" 2>/dev/null || true
+cat /proc/$PID/io > "$OUT/io" 2>/dev/null || true
+cat /proc/$PID/stat > "$OUT/stat" 2>/dev/null || true
+cat /proc/$PID/statm > "$OUT/statm" 2>/dev/null || true
+cat /proc/$PID/wchan > "$OUT/wchan" 2>/dev/null || true
+cat /proc/$PID/stack > "$OUT/kernel_stack" 2>/dev/null || true
+ls -la /proc/$PID/fd/ > "$OUT/fd_list" 2>/dev/null || true
+cat /proc/$PID/fdinfo/* > "$OUT/fdinfo" 2>/dev/null || true
+
+# 2. Memory maps
+echo "[2/9] memory"
+cat /proc/$PID/maps > "$OUT/maps" 2>/dev/null || true
+cat /proc/$PID/smaps_rollup > "$OUT/smaps_rollup" 2>/dev/null || true
+
+# 3. Children + threads
+echo "[3/9] tree"
+ps -T -p $PID > "$OUT/threads" 2>/dev/null || true
+pstree -p $PID > "$OUT/pstree" 2>/dev/null || true
+ps --forest -g $(ps -o sid= -p $PID) > "$OUT/session_tree" 2>/dev/null || true
+
+# 4. Open files + sockets
+echo "[4/9] lsof"
+lsof -p $PID > "$OUT/lsof" 2>/dev/null || true
+
+# 5. Network
+echo "[5/9] network"
+ss -tnp | grep "pid=$PID" > "$OUT/sockets" 2>/dev/null || true
+cat /proc/$PID/net/tcp > "$OUT/net_tcp" 2>/dev/null || true
+cat /proc/$PID/net/tcp6 > "$OUT/net_tcp6" 2>/dev/null || true
+
+# 6. Strace snapshot (1 second)
+echo "[6/9] strace (1s)"
+timeout 1 strace -p $PID -c -o "$OUT/strace_summary" 2>/dev/null || true
+timeout 1 strace -p $PID -tt -T -o "$OUT/strace_trace" 2>/dev/null || true
+
+# 7. Perf (1 second if available)
+echo "[7/9] perf (1s)"
+if command -v perf &>/dev/null; then
+  timeout 1 perf stat -p $PID -o "$OUT/perf_stat" 2>/dev/null || true
+  timeout 1 perf record -p $PID -o "$OUT/perf.data" -g 2>/dev/null || true
+fi
+
+# 8. CRIU dump (if available, non-destructive)
+echo "[8/9] criu"
+if command -v criu &>/dev/null; then
+  criu dump -t $PID --images-dir "$OUT/criu" --leave-running --shell-job 2>"$OUT/criu_err" || echo "criu: skipped ($(cat $OUT/criu_err))"
+else
+  # DIY checkpoint: /proc memory dump
+  cat /proc/$PID/mem > "$OUT/mem_dump" 2>/dev/null &
+  MEM_PID=$!
+  sleep 0.5
+  kill $MEM_PID 2>/dev/null || true
+  echo "criu: not installed, partial mem dump saved"
+fi
+
+# 9. Summary
+echo "[9/9] summary"
+cat > "$OUT/CAPTURE.json" <<EOF
+{
+  "pid": $PID,
+  "timestamp": "$(date -Iseconds)",
+  "hostname": "$(hostname)",
+  "cmdline": "$(tr '\0' ' ' < /proc/$PID/cmdline 2>/dev/null)",
+  "state": "$(awk '/^State:/{print $2}' /proc/$PID/status 2>/dev/null)",
+  "threads": $(awk '/^Threads:/{print $2}' /proc/$PID/status 2>/dev/null || echo 0),
+  "vm_rss_kb": $(awk '/^VmRSS:/{print $2}' /proc/$PID/status 2>/dev/null || echo 0),
+  "fd_count": $(ls /proc/$PID/fd/ 2>/dev/null | wc -l),
+  "files": $(ls "$OUT" | wc -l)
+}
+EOF
+
+echo "=== Capture complete: $OUT ==="
+cat "$OUT/CAPTURE.json"
