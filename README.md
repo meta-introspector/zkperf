@@ -95,6 +95,7 @@ make report                                    # Generate JSON report
 - [Existing Data Catalog](docs/EXISTING_DATA.md)
 - [Recording Tools Reference](docs/RECORDING_TOOLS.md)
 - [eRDFa Integration](docs/ERDFA_INTEGRATION.md)
+- [MDL Evidence v1](docs/MDL_EVIDENCE_V1.md)
 - [Sample Trace Compression](docs/SAMPLE_TRACE_COMPRESSION.md)
 - [Proof Artifacts](proofs/README.md)
 - [CRQ-002: zkPerf Specification](../CRQ-002-introspector.md)
@@ -121,6 +122,20 @@ The important property is exact round-trip:
 - compact payload keeps the canonical generating fields
 - derived matrix/annotation fields are dropped
 - decode reconstructs the normalized trace contract exactly
+
+## Bounded MDL Evidence
+
+For downstream systems that need a simple machine-readable MDL witness surface,
+`zkperf` now documents a small canonical JSON shape:
+
+- `schema_version = mdl-evidence-v1`
+- concrete `mdl.total_length`
+- bounded descent indicators such as:
+  - `mdl.descent_monotone`
+  - `mdl.violation_count`
+  - `mdl.worst_increase`
+
+See [MDL Evidence v1](docs/MDL_EVIDENCE_V1.md).
 
 ## License
 
