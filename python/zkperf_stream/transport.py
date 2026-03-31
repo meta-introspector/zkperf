@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import tempfile
 import time
 from hashlib import sha256
 from pathlib import Path
@@ -21,6 +22,29 @@ from .index import (
 )
 from .providers.hf import download_hf_object_bytes, fetch_hf_object, upload_hf_file_with_ack
 from .providers.ipfs import download_ipfs_object_bytes, fetch_ipfs_object
+
+
+def _is_not_found_error(exc: Exception) -> bool:
+    response = getattr(exc, "response", None)
+    if getattr(response, "status_code", None) == 404:
+        return True
+    status_code = getattr(exc, "status_code", None)
+    if status_code == 404:
+        return True
+    text = str(exc).lower()
+    return "404" in text or "not found" in text
+
+
+def _validate_fixture_matches_record(fixture: dict[str, Any], record: dict[str, Any]) -> None:
+    expected_stream_id = record.get("streamId") or fixture.get("streamId")
+    if fixture.get("streamId") != expected_stream_id:
+        raise ValueError(
+            f"fixture streamId {fixture.get('streamId')!r} does not match remote record streamId {expected_stream_id!r}"
+        )
+    if "contractVersion" in record and fixture.get("contractVersion") != record.get("contractVersion"):
+        raise ValueError("fixture contractVersion does not match remote record")
+    if "streamKind" in record and fixture.get("streamKind") != record.get("streamKind"):
+        raise ValueError("fixture streamKind does not match remote record")
 
 
 def publish_zkperf_stream_to_hf_impl(
@@ -46,15 +70,16 @@ def publish_zkperf_stream_to_hf_impl(
     bundle = bundle_builder(fixture)
     stream_build_ms = _elapsed_ms(stream_build_started)
     tar_write_started = time.perf_counter()
-    temp_tar = Path("/tmp") / f"{fixture['streamId']}-{fixture['streamRevision']}.tar"
-    temp_tar.write_bytes(bundle["tarBytes"])
-    tar_write_ms = _elapsed_ms(tar_write_started)
-    hf_publish_started = time.perf_counter()
-    receipt = uploader(
-        local_path=str(temp_tar),
-        hf_uri=hf_uri,
-        commit_message=commit_message or f"Publish zkperf stream {fixture['streamRevision']}",
-    )
+    with tempfile.TemporaryDirectory(prefix="zkperf-stream-") as temp_dir:
+        temp_tar = Path(temp_dir) / "archive.tar"
+        temp_tar.write_bytes(bundle["tarBytes"])
+        tar_write_ms = _elapsed_ms(tar_write_started)
+        hf_publish_started = time.perf_counter()
+        receipt = uploader(
+            local_path=str(temp_tar),
+            hf_uri=hf_uri,
+            commit_message=commit_message or f"Publish zkperf stream {fixture['streamRevision']}",
+        )
     hf_publish_ms = _elapsed_ms(hf_publish_started)
     bundle["streamManifest"]["containerObjectRef"] = {
         "sink": "hf",
@@ -118,8 +143,10 @@ def load_remote_zkperf_stream_index_impl(
 ) -> dict[str, Any] | None:
     try:
         fetched = fetcher(hf_uri=index_hf_uri, revision=revision)
-    except Exception:
-        return None
+    except Exception as exc:
+        if _is_not_found_error(exc):
+            return None
+        raise
     text = fetched.get("text")
     return json.loads(text) if text else None
 
@@ -132,8 +159,10 @@ def load_remote_zkperf_stream_index_ipfs_impl(
 ) -> dict[str, Any] | None:
     try:
         fetched = fetcher(ipfs_uri=index_ipfs_uri, base_url=gateway_base_url)
-    except Exception:
-        return None
+    except Exception as exc:
+        if _is_not_found_error(exc):
+            return None
+        raise
     text = fetched.get("text")
     return json.loads(text) if text else None
 
@@ -182,6 +211,11 @@ def resolve_zkperf_stream_from_index_hf_impl(
     record_ms = _elapsed_ms(record_started)
     manifest_started = time.perf_counter()
     fixture = fixture_loader(fixture_path)
+    record = dict(record)
+    record.setdefault("streamId", fixture.get("streamId"))
+    record.setdefault("contractVersion", fixture.get("contractVersion"))
+    record.setdefault("streamKind", fixture.get("streamKind"))
+    _validate_fixture_matches_record(fixture, record)
     stream_manifest = {
         "contractVersion": fixture["contractVersion"],
         "streamId": fixture["streamId"],
@@ -254,6 +288,11 @@ def resolve_zkperf_stream_from_index_ipfs_impl(
     record_ms = _elapsed_ms(record_started)
     manifest_started = time.perf_counter()
     fixture = fixture_loader(fixture_path)
+    record = dict(record)
+    record.setdefault("streamId", fixture.get("streamId"))
+    record.setdefault("contractVersion", fixture.get("contractVersion"))
+    record.setdefault("streamKind", fixture.get("streamKind"))
+    _validate_fixture_matches_record(fixture, record)
     stream_manifest = {
         "contractVersion": fixture["contractVersion"],
         "streamId": fixture["streamId"],

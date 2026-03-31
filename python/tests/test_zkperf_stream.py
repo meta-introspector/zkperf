@@ -22,6 +22,8 @@ from zkperf_stream import (
     resolve_zkperf_stream_from_index_ipfs,
     update_zkperf_stream_index,
 )
+from zkperf_stream.providers.hf import parse_hf_uri
+from zkperf_stream.providers.ipfs import publish_ipfs_file_with_ack
 
 FIXTURE = Path(__file__).parent / "fixtures" / "zkperf_stream_v1.example.json"
 
@@ -86,6 +88,29 @@ def test_update_zkperf_stream_index_and_retention() -> None:
         {"policyVersion": "zkperf-retention/v1", "mode": "retain-latest-n", "maxRevisionCount": 2},
     )
     assert [item["streamRevision"] for item in kept] == ["rev-b", "rev-c"]
+
+
+def test_stream_index_prefers_latest_revision_token() -> None:
+    base = build_zkperf_stream_index(stream_id="zkperf-stream-demo")
+    for revision in ("rev-20260330-a", "rev-20260331-a", "rev-20260329-z"):
+        manifest = {
+            "streamId": "zkperf-stream-demo",
+            "streamRevision": revision,
+            "createdAtUtc": "2026-03-30T10:00:00Z",
+            "windowCount": 1,
+            "observationCount": 1,
+            "observationIndex": [],
+            "latestWindowId": "window-0001",
+            "sequenceRange": {"start": 1, "end": 1},
+            "windows": [],
+            "containerObjectRef": {"sink": "hf", "uri": "hf://datasets/chbwa/demo/archive.tar"},
+        }
+        base = update_zkperf_stream_index(
+            existing_index=base,
+            stream_manifest=manifest,
+            hf_receipt={"acknowledgedRevision": revision, "verified": True},
+        )
+    assert base["latestRevision"] == "rev-20260331-a"
 
 
 def test_publish_zkperf_stream_index_to_hf(monkeypatch) -> None:
@@ -205,3 +230,82 @@ def test_load_remote_zkperf_stream_index_ipfs(monkeypatch) -> None:
     )
     payload = load_remote_zkperf_stream_index_ipfs("ipfs://bafy-demo/index.json")
     assert payload["latestRevision"] == "rev-demo"
+
+
+def test_resolve_from_index_rejects_fixture_stream_id_mismatch(monkeypatch, tmp_path: Path) -> None:
+    fixture = load_zkperf_stream_fixture(FIXTURE)
+    fixture["streamId"] = "zkperf-stream-wrong"
+    fixture_copy = tmp_path / "fixture.json"
+    fixture_copy.write_text(json.dumps(fixture), encoding="utf-8")
+    index_payload = {
+        "latestRevision": "rev-20260330-a",
+        "revisions": [
+            {
+                "streamId": "zkperf-stream-demo",
+                "streamRevision": "rev-20260330-a",
+                "acknowledgedRevision": "ack-demo",
+                "windowCount": 0,
+                "latestWindowId": None,
+                "sequenceRange": {"start": None, "end": None},
+                "windows": [],
+                "containerObjectRef": {"sink": "hf", "uri": "hf://datasets/chbwa/demo/zkperf-stream-demo.tar"},
+            }
+        ],
+    }
+    monkeypatch.setattr("zkperf_stream.transport.load_remote_zkperf_stream_index", lambda *args, **kwargs: index_payload)
+    try:
+        resolve_zkperf_stream_from_index_hf(
+            fixture_path=fixture_copy,
+            index_hf_uri="hf://datasets/chbwa/demo/zkperf-stream-demo.index.json",
+            latest=True,
+        )
+    except ValueError as exc:
+        assert "streamId" in str(exc)
+    else:
+        raise AssertionError("expected streamId mismatch to raise")
+
+
+def test_parse_hf_uri_model_resolve_url() -> None:
+    model_ref = parse_hf_uri("hf://models/openai/demo/model.bin")
+    assert model_ref.resolve_url == "https://huggingface.co/openai/demo/resolve/main/model.bin"
+    dataset_ref = parse_hf_uri("hf://datasets/openai/demo/file.json")
+    assert dataset_ref.resolve_url == "https://huggingface.co/datasets/openai/demo/resolve/main/file.json"
+
+
+def test_publish_ipfs_file_with_ack_respects_pin_and_parses_json_lines(monkeypatch, tmp_path: Path) -> None:
+    local_path = tmp_path / "artifact.json"
+    local_path.write_text("{\"ok\":true}", encoding="utf-8")
+
+    class Response:
+        def __init__(self, *, text: str = "", content: bytes | None = None) -> None:
+            self.text = text
+            self.content = content if content is not None else text.encode("utf-8")
+            self.status_code = 200
+            self.headers = {}
+            self.url = "http://127.0.0.1:5001"
+
+        def raise_for_status(self) -> None:
+            return None
+
+    calls: list[tuple[str, dict[str, object]]] = []
+
+    def fake_post(url: str, **kwargs):
+        calls.append((url, kwargs))
+        if url.endswith("/version"):
+            return Response(text="{\"Version\":\"0.1\"}")
+        if url.endswith("/add"):
+            return Response(text='{"Name":"artifact.json","Hash":"bafy-first"}\n{"Name":"","Hash":"bafy-final"}\n')
+        raise AssertionError(url)
+
+    monkeypatch.setattr(
+        "zkperf_stream.providers.ipfs.fetch_ipfs_object",
+        lambda **kwargs: {"sha256": "c6d39d4736dcf2f3fe0c7c56ba1a71c2ae05d5211b8a32d0e1b5d8a1b4f1f2c8"},
+    )
+    receipt = publish_ipfs_file_with_ack(
+        local_path=str(local_path),
+        post=fake_post,
+        pin=False,
+    )
+    assert receipt["cid"] == "bafy-final"
+    add_call = next(kwargs for url, kwargs in calls if url.endswith("/add"))
+    assert add_call["params"] == {"pin": "false"}

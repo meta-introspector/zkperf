@@ -58,10 +58,7 @@ def build_zkperf_stream_fixture_from_observations(
     resolved_stream_id = stream_id or _derive_stream_id(observations)
     grouped: dict[tuple[str, str], list[dict[str, Any]]] = {}
     for observation in observations:
-        group_key = (
-            str(observation.get("run_id") or "unknown-run"),
-            str(observation.get("trace_id") or observation["zkperf_observation_id"]),
-        )
+        group_key = (str(observation["run_id"]), str(observation["trace_id"]))
         grouped.setdefault(group_key, []).append(observation)
     ordered_groups = sorted(
         grouped.items(),
@@ -109,7 +106,10 @@ def build_zkperf_stream_bundle(stream_manifest: dict[str, Any]) -> dict[str, Any
     stream_id = stream_manifest["streamId"]
     stream_revision = stream_manifest["streamRevision"]
     stream_window_count = len(stream_manifest.get("windows", []))
-    stream_observation_count = 0
+    stream_observation_count = sum(
+        len(window.get("payload", {}).get("observations", []))
+        for window in stream_manifest.get("windows", [])
+    )
     observation_index: list[dict[str, Any]] = []
     windows = []
     tar_bytes_io = io.BytesIO()
@@ -117,7 +117,6 @@ def build_zkperf_stream_bundle(stream_manifest: dict[str, Any]) -> dict[str, Any
         for window in stream_manifest.get("windows", []):
             observations = list(window.get("payload", {}).get("observations", []))
             window_observation_count = len(observations)
-            stream_observation_count += window_observation_count
             for observation in observations:
                 observation_index.append(
                     {

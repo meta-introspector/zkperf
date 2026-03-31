@@ -106,6 +106,33 @@ def test_project_register_and_flow_metrics() -> None:
     assert payload["flow.transition.R0__R1"] == 1.0
 
 
+def test_query_spectrogram_keeps_sparse_negative_features(tmp_path: Path) -> None:
+    fixture = {
+        "streamId": "zkperf-stream-demo",
+        "streamRevision": "rev-demo",
+        "windows": [
+            {"windowId": "window-0001", "sequence": 1, "payload": {"observations": [{"zkperf_observation_id": "obs-1", "metrics": [{"metric": "neg_score", "value": -3.0}, {"metric": "shared", "value": 2.0}]}]}},
+            {"windowId": "window-0002", "sequence": 2, "payload": {"observations": [{"zkperf_observation_id": "obs-2", "metrics": [{"metric": "shared", "value": 1.0}]}]}},
+        ],
+    }
+    feature_payload = build_zkperf_feature_spectrogram_payload(
+        fixture,
+        top_k_features=4,
+        feature_prefixes=["neg_score", "shared"],
+    )
+    assert "neg_score" in feature_payload["featureNames"]
+    neg_col = feature_payload["featureNames"].index("neg_score")
+    assert feature_payload["matrix"][0][neg_col] < 0
+
+    payload = render_zkperf_query_spectrogram(
+        fixture,
+        output_path=tmp_path / "query_sparse.png",
+        query_metrics={"neg_score": -3.0, "shared": 2.0},
+    )
+    assert "neg_score" in payload["queryFeatureNames"]
+    assert len(payload["scores"]) == 2
+
+
 def test_render_feature_pca_and_query_spectrograms(tmp_path: Path) -> None:
     fixture = json.loads(_fixture(tmp_path).read_text(encoding="utf-8"))
     feature_payload = render_zkperf_feature_spectrogram(

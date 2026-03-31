@@ -5,6 +5,12 @@ from pathlib import Path
 from typing import Any
 
 
+def _stream_revision_sort_key(value: Any) -> tuple[int, str]:
+    token = str(value)
+    digits = "".join(ch for ch in token if ch.isdigit())
+    return (int(digits), token) if digits else (0, token)
+
+
 def build_zkperf_stream_latest(
     stream_manifest: dict[str, Any],
     hf_receipt: dict[str, Any],
@@ -129,7 +135,7 @@ def update_zkperf_stream_index(
     }
     revisions = [item for item in revisions if item["streamRevision"] != record["streamRevision"]]
     revisions.append(record)
-    revisions.sort(key=lambda item: item["sequenceRange"]["end"] or -1)
+    revisions.sort(key=lambda item: _stream_revision_sort_key(item["streamRevision"]))
     revisions = apply_zkperf_stream_retention_policy(revisions, index.get("retentionPolicy"))
     index["revisions"] = revisions
     index["revisionCount"] = len(revisions)

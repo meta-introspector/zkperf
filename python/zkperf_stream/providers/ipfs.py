@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 from datetime import datetime, timezone
@@ -112,16 +113,27 @@ def publish_ipfs_file_with_ack(
             response = api_post(
                 f"{api_base_url.rstrip('/')}/api/v0/add",
                 files={"file": (os.path.basename(local_path), handle)},
+                params={"pin": "true" if pin else "false"},
                 timeout=timeout,
             )
         if hasattr(response, "raise_for_status"):
             response.raise_for_status()
         text = response.text if hasattr(response, "text") else str(response)
+        rows = [json.loads(line) for line in text.splitlines() if line.strip()]
+        if not rows or "Hash" not in rows[-1]:
+            raise ValueError("ipfs add response did not contain a Hash field")
+        cid = str(rows[-1]["Hash"])
     else:
         cli = run or subprocess.run
-        completed = cli(["ipfs", "add", "-Q", local_path], check=True, capture_output=True, text=True)
+        command = ["ipfs", "add"]
+        if pin:
+            command.append("--pin=true")
+        else:
+            command.append("--pin=false")
+        command.extend(["-Q", local_path])
+        completed = cli(command, check=True, capture_output=True, text=True)
         text = completed.stdout
-    cid = text.strip().splitlines()[-1]
+        cid = text.strip().splitlines()[-1]
     ipfs_uri = f"ipfs://{cid}"
     fetched = fetch_ipfs_object(ipfs_uri=ipfs_uri, base_url="https://ipfs.io")
     return {

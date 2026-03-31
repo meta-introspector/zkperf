@@ -415,9 +415,10 @@ def _select_feature_names(observations: list[dict[str, Any]], *, top_k_features:
 
 
 def _select_query_features(observations: list[dict[str, Any]], query_vector: dict[str, float], feature_prefixes: list[str] | None) -> list[str]:
-    candidate_names: set[str] = set(query_vector.keys())
+    candidate_names: set[str] = set()
     for row in observations:
-        candidate_names &= set(row["metrics"].keys())
+        candidate_names |= set(row["metrics"].keys())
+    candidate_names &= set(query_vector.keys())
     names = sorted(candidate_names)
     if feature_prefixes:
         names = [name for name in names if any(name == prefix or name.startswith(f"{prefix}.") for prefix in feature_prefixes)]
@@ -431,7 +432,7 @@ def _build_feature_matrix(observations: list[dict[str, Any]], feature_names: lis
     for row_idx, row in enumerate(observations):
         for col_idx, name in enumerate(feature_names):
             matrix[row_idx, col_idx] = float(row["metrics"].get(name, 0.0))
-    return np.log1p(np.abs(matrix))
+    return np.sign(matrix) * np.log1p(np.abs(matrix))
 
 
 def _build_query_vector(query_metrics: dict[str, float] | None, query_observation: dict[str, Any] | None) -> dict[str, float]:
@@ -446,7 +447,7 @@ def _build_query_vector(query_metrics: dict[str, float] | None, query_observatio
         metrics.update(project_zkperf_observation_metrics(query_observation))
     if not metrics:
         raise ValueError("query vector is empty after filtering non-numeric values")
-    return {key: float(np.log1p(abs(val))) for key, val in metrics.items()}
+    return {key: float(np.sign(val) * np.log1p(abs(val))) for key, val in metrics.items()}
 
 
 def _render_heatmap(matrix: np.ndarray, *, x_labels: list[str], y_labels: list[str], title: str, output_path: str | Path) -> None:
