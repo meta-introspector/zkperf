@@ -1,0 +1,80 @@
+{
+  "contractVersion": "zkperf-stream/v1",
+  "streamId": "zkperf-stream-demo",
+  "streamRevision": "rev-20260330-a",
+  "streamKind": "zkperf-observation-stream",
+  "windowingMode": "trace-id-grouped",
+  "createdAtUtc": "2026-03-30T10:00:00Z",
+  "windows": [
+    {
+      "windowId": "window-0001",
+      "sequence": 1,
+      "runId": "run-20260330-a",
+      "traceId": "trace-20260330-0001",
+      "observationIds": ["zkperf-obsv-0001"],
+      "startedAtUtc": "2026-03-30T10:00:00Z",
+      "endedAtUtc": "2026-03-30T10:00:01Z",
+      "payload": {
+        "observations": [
+          {
+            "zkperf_observation_id": "zkperf-obsv-0001",
+            "trace_id": "trace-20260330-0001",
+            "run_id": "run-20260330-a",
+            "asserted_at": "2026-03-30T10:00:01Z",
+            "source_ref": "perf://demo/run-20260330-a",
+            "status": "ok",
+            "metrics": [
+              {"metric": "summary.covered_count", "value": 1, "unit": "count"}
+            ],
+            "trace_refs": [{"kind": "perf", "uri": "perf://trace-20260330-0001"}],
+            "proof_refs": [{"kind": "witness", "uri": "proof://trace-20260330-0001"}],
+            "hash": "sha256:1111",
+            "registers": {"AX": "0x41"},
+            "registerFingerprints": {"AX": "C"},
+            "registerChanges": ["AX:=0x41", "ip:0x1000→0x1010"],
+            "flowTags": ["INPUT_READ"],
+            "fromRegion": "R0",
+            "toRegion": "R1"
+          }
+        ]
+      }
+    },
+    {
+      "windowId": "window-0002",
+      "sequence": 2,
+      "runId": "run-20260330-a",
+      "traceId": "trace-20260330-0002",
+      "observationIds": ["zkperf-obsv-0002"],
+      "startedAtUtc": "2026-03-30T10:00:02Z",
+      "endedAtUtc": "2026-03-30T10:00:03Z",
+      "payload": {
+        "observations": [
+          {
+            "zkperf_observation_id": "zkperf-obsv-0002",
+            "trace_id": "trace-20260330-0002",
+            "run_id": "run-20260330-a",
+            "asserted_at": "2026-03-30T10:00:03Z",
+            "source_ref": "perf://demo/run-20260330-a",
+            "status": "ok",
+            "metrics": [
+              {"metric": "summary.covered_count", "value": 2, "unit": "count"}
+            ],
+            "trace_refs": [{"kind": "perf", "uri": "perf://trace-20260330-0002"}],
+            "proof_refs": [{"kind": "witness", "uri": "proof://trace-20260330-0002"}],
+            "hash": "sha256:2222",
+            "registers": {"AX": "0x42", "BX": "0x10"},
+            "fingerprint": "LM",
+            "registerOrder": ["AX", "BX"],
+            "registerChanges": [
+              {"register": "AX", "old": "0x41", "new": "0x42"},
+              {"register": "BX", "old": "0x01", "new": "0x10"}
+            ],
+            "flowTags": ["LOOP_TICK", "MIX_ROUND"],
+            "regionId": "R1"
+          }
+        ]
+      }
+    }
+  ],
+  "containerObjectRef": null
+}
