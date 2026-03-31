@@ -94,6 +94,7 @@ make report                                    # Generate JSON report
 - [Nix Derivation Archaeology](docs/NIX_DERIVATIONS.md)
 - [Existing Data Catalog](docs/EXISTING_DATA.md)
 - [Recording Tools Reference](docs/RECORDING_TOOLS.md)
+- [zkperf Stream v1](docs/ZKPERF_STREAM_V1.md)
 - [eRDFa Integration](docs/ERDFA_INTEGRATION.md)
 - [Sample Trace Compression](docs/SAMPLE_TRACE_COMPRESSION.md)
 - [Proof Artifacts](proofs/README.md)
@@ -121,6 +122,21 @@ The important property is exact round-trip:
 - compact payload keeps the canonical generating fields
 - derived matrix/annotation fields are dropped
 - decode reconstructs the normalized trace contract exactly
+
+## Python Stream Tooling
+
+`zkperf` now also carries a bounded Python lane under `python/zkperf_stream` for:
+
+- building `zkperf-stream/v1` fixtures and tar bundles
+- maintaining latest/index contracts with retain-latest-n retention
+- publishing stream artifacts to HF and resolving them back from HF or IPFS
+- rendering register-aware and flow-aware spectrograms
+
+Focused validation runs with:
+
+```bash
+PYTHONPATH=python pytest python/tests/test_zkperf_stream.py python/tests/test_zkperf_viz.py
+```
 
 ## License
 

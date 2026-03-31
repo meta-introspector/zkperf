@@ -23,3 +23,7 @@ target
 # Nix build result symlinks
 result
 result-*
+
+# Python test/runtime artifacts
+__pycache__/
+*.pyc

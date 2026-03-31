@@ -31,3 +31,13 @@ nix run .#perf-compare -- a.dat b.dat  # Compare stages
 nix run .#perf-report -- recordings/   # Generate report
 nix develop                            # Enter dev shell with all tools
 ```
+
+## Python Stream Lane
+
+The repo also has a bounded Python stream layer in `python/zkperf_stream` for fixture bundling, HF/IPFS transport, and register-aware visualization.
+
+Focused validation:
+
+```bash
+PYTHONPATH=python pytest python/tests/test_zkperf_stream.py python/tests/test_zkperf_viz.py
+```
